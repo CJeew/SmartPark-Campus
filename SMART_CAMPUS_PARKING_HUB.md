@@ -13,7 +13,7 @@
 - [P01 · Login Page](#p01--login-page)
 - [P02 · Register Page](#p02--register-page)
 - [P03 · Profile Page](#p03--profile-page)
-- [P04 · Student Dashboard](#p04--student-dashboard)
+- [P04 · User Dashboard](#p04--user-dashboard)
 - [P05 · Admin Dashboard](#p05--admin-dashboard)
 - [P06 · Parking Zone Browse Page](#p06--parking-zone-browse-page)
 - [P07 · Slot Catalogue Page](#p07--slot-catalogue-page)
@@ -181,7 +181,7 @@ View and edit personal profile and registered vehicle details.
 
 ---
 
-## P04 · Student / User Dashboard
+## P04 · User Dashboard
 
 **Route:** `/dashboard` (when role = USER or WARDEN)
 **Access:** USER and WARDEN roles
@@ -1518,10 +1518,91 @@ Badge displaying the user's system role with appropriate styling.
 
 | Member | Module | Pages Owned | Backend Endpoints |
 |---|---|---|---|
-| **Member 1** | Module A – Parking Catalogue & Slot Management | P06, P07, P16, P17 | `GET/POST/PUT/DELETE /api/zones`, `GET/POST/PUT/DELETE /api/slots`, `GET /api/slots/available` |
-| **Member 2** | Module B – Booking & Reservation Management | P08, P09, P10, P11 | `POST /api/bookings`, `GET /api/bookings`, `GET /api/bookings/my`, `PUT /api/bookings/{id}/approve`, `PUT /api/bookings/{id}/reject`, `PUT /api/bookings/{id}/cancel` |
-| **Member 3** | Module C – Incident & Maintenance Ticketing | P12, P13, P14, P15 | `POST /api/tickets`, `GET /api/tickets`, `GET /api/tickets/my`, `PUT /api/tickets/{id}/status`, `PUT /api/tickets/{id}/assign`, `POST/PUT/DELETE /api/tickets/{id}/comments`, `POST /api/tickets/{id}/attachments` |
-| **Member 4** | Modules D & E – Auth, Roles & Notifications | P01, P02, P03, P04, P05, P18, P19 | `GET /api/auth/me`, `PUT /api/users/{id}/role`, `GET /api/users`, `GET/PUT/DELETE /api/notifications` |
+| **Member 1** | Module A – Parking Catalogue & Slot Management | P06, P07, P16, P17 | `GET/POST/PUT/DELETE /api/zones` · `GET/POST/PUT/DELETE /api/slots` · `GET /api/slots/available` |
+| **Member 2** | Module B – Booking & Reservation Management | P08, P09, P10, P11 | `POST /api/bookings` · `GET /api/bookings` · `GET /api/bookings/my` · `PUT /api/bookings/{id}/approve` · `PUT /api/bookings/{id}/reject` · `PUT /api/bookings/{id}/cancel` |
+| **Member 3** | Module C – Incident & Maintenance Ticketing | P12, P13, P14, P15 | `POST /api/tickets` · `GET /api/tickets` · `GET /api/tickets/my` · `PUT /api/tickets/{id}/status` · `PUT /api/tickets/{id}/assign` · `POST/PUT/DELETE /api/tickets/{id}/comments` · `POST /api/tickets/{id}/attachments` |
+| **Member 4** | Modules D & E – Auth, Roles & Notifications | P01, P02, P03, P04, P05, P18, P19 | `GET /api/auth/me` · `PUT /api/users/{id}/role` · `GET /api/users` · `GET/PUT/DELETE /api/notifications` |
+
+---
+
+# 🎨 Global Color Tokens
+
+```css
+/* ===== SMART CAMPUS PARKING HUB — GLOBAL COLOR TOKENS ===== */
+
+:root {
+  /* Primary */
+  --color-primary:        #2563EB;  /* Blue 600 — main actions, buttons */
+  --color-primary-hover:  #1D4ED8;  /* Blue 700 — hover state */
+  --color-primary-light:  #DBEAFE;  /* Blue 100 — backgrounds, highlights */
+
+  /* Success */
+  --color-success:        #16A34A;  /* Green 600 — approved, available, resolved */
+  --color-success-hover:  #15803D;  /* Green 700 */
+  --color-success-light:  #DCFCE7;  /* Green 100 — success backgrounds */
+
+  /* Warning */
+  --color-warning:        #D97706;  /* Amber 600 — pending, in progress */
+  --color-warning-hover:  #B45309;  /* Amber 700 */
+  --color-warning-light:  #FEF3C7;  /* Amber 100 — warning backgrounds */
+
+  /* Danger */
+  --color-danger:         #DC2626;  /* Red 600 — rejected, critical, delete */
+  --color-danger-hover:   #B91C1C;  /* Red 700 */
+  --color-danger-light:   #FEE2E2;  /* Red 100 — danger backgrounds */
+
+  /* Neutral */
+  --color-grey-50:        #F9FAFB;
+  --color-grey-100:       #F3F4F6;
+  --color-grey-200:       #E5E7EB;
+  --color-grey-300:       #D1D5DB;
+  --color-grey-400:       #9CA3AF;
+  --color-grey-500:       #6B7280;
+  --color-grey-600:       #4B5563;
+  --color-grey-700:       #374151;
+  --color-grey-800:       #1F2937;
+  --color-grey-900:       #111827;
+
+  /* Background */
+  --color-bg:             #F9FAFB;  /* App background */
+  --color-surface:        #FFFFFF;  /* Card / panel background */
+  --color-border:         #E5E7EB;  /* Default border color */
+
+  /* Text */
+  --color-text-primary:   #111827;  /* Main body text */
+  --color-text-secondary: #6B7280;  /* Subtext, labels */
+  --color-text-disabled:  #D1D5DB;  /* Disabled state text */
+  --color-text-inverse:   #FFFFFF;  /* Text on dark backgrounds */
+
+  /* Vehicle Types */
+  --color-car:            #2563EB;  /* Blue — CAR */
+  --color-bike:           #16A34A;  /* Green — BIKE */
+  --color-threewheeler:   #D97706;  /* Amber — THREE_WHEELER */
+
+  /* Status — Booking */
+  --color-pending:        #D97706;
+  --color-approved:       #16A34A;
+  --color-rejected:       #DC2626;
+  --color-cancelled:      #6B7280;
+
+  /* Status — Ticket */
+  --color-open:           #2563EB;
+  --color-in-progress:    #D97706;
+  --color-resolved:       #16A34A;
+  --color-closed:         #6B7280;
+
+  /* Priority */
+  --color-low:            #6B7280;
+  --color-medium:         #2563EB;
+  --color-high:           #D97706;
+  --color-critical:       #DC2626;
+
+  /* Roles */
+  --color-role-user:      #2563EB;
+  --color-role-warden:    #D97706;
+  --color-role-admin:     #DC2626;
+}
+```
 
 ---
 
@@ -1533,7 +1614,7 @@ Badge displaying the user's system role with appropriate styling.
 > 5. Booking module: Book a Slot → My Bookings → Booking Detail → Admin Review
 > 6. Tickets module: Report Incident → My Tickets → Ticket Detail → Admin Ticket Dashboard
 > 7. Notifications page
-> 8. Dashboards last (they pull data from all modules)
+> 8. Dashboards last — they pull data from all modules
 
 ---
 
