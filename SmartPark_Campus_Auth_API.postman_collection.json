@@ -1,0 +1,406 @@
+{
+  "info": {
+    "name": "SmartPark Campus - Authentication API",
+    "description": "Test collection for Login and Register API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Register",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Generate timestamp and unique values",
+              "const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, -5);",
+              "pm.environment.set('timestamp', timestamp);",
+              "pm.environment.set('uniqueEmail', `user${timestamp}@sliit.lk`);",
+              "pm.environment.set('uniqueUniversityId', `IT${Math.floor(Math.random() * 100000)}`);",
+              "pm.environment.set('uniqueRegistrationNumber', `CAR-${Math.floor(Math.random() * 9999)}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// @ts-check",
+              "const responseJson = pm.response.json();",
+              "",
+              "// Test 1: Status code is 201 Created",
+              "pm.test('Status code is 201 Created', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// Test 2: Response has success property set to true",
+              "pm.test('Response indicates success', function () {",
+              "  pm.expect(responseJson).to.have.property('success', true);",
+              "});",
+              "",
+              "// Test 3: Response contains required properties",
+              "pm.test('Response has required properties', function () {",
+              "  pm.expect(responseJson).to.have.property('message');",
+              "  pm.expect(responseJson).to.have.property('token');",
+              "  pm.expect(responseJson).to.have.property('user');",
+              "});",
+              "",
+              "// Test 4: JWT token is valid format",
+              "pm.test('Token is valid JWT format', function () {",
+              "  const token = responseJson.token;",
+              "  pm.expect(token).to.match(/^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$/);",
+              "});",
+              "",
+              "// Test 5: User object contains required fields",
+              "pm.test('User object has required fields', function () {",
+              "  const user = responseJson.user;",
+              "  pm.expect(user).to.have.property('id');",
+              "  pm.expect(user).to.have.property('email');",
+              "  pm.expect(user).to.have.property('fullName');",
+              "  pm.expect(user).to.have.property('universityId');",
+              "  pm.expect(user).to.have.property('phoneNumber');",
+              "  pm.expect(user).to.have.property('faculty');",
+              "  pm.expect(user).to.have.property('userType');",
+              "  pm.expect(user).to.have.property('roles');",
+              "  pm.expect(user).to.have.property('vehicles');",
+              "});",
+              "",
+              "// Test 6: User has USER role assigned",
+              "pm.test('User has USER role assigned', function () {",
+              "  const user = responseJson.user;",
+              "  pm.expect(user.roles).to.include('USER');",
+              "});",
+              "",
+              "// Test 7: User has vehicle registered",
+              "pm.test('User has vehicle registered', function () {",
+              "  const user = responseJson.user;",
+              "  pm.expect(user.vehicles).to.be.an('array').that.is.not.empty;",
+              "  pm.expect(user.vehicles[0]).to.have.property('vehicleType');",
+              "  pm.expect(user.vehicles[0]).to.have.property('registrationNumber');",
+              "});",
+              "",
+              "// Store token for subsequent requests",
+              "if (responseJson.success && responseJson.token) {",
+              "  pm.environment.set('auth_token', responseJson.token);",
+              "  pm.environment.set('user_id', responseJson.user.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\\n  \\\"fullName\\\": \\\"John Doe\\\",\\n  \\\"email\\\": \\\"{{uniqueEmail}}\\\",\\n  \\\"universityId\\\": \\\"{{uniqueUniversityId}}\\\",\\n  \\\"phoneNumber\\\": \\\"0712345678\\\",\\n  \\\"faculty\\\": \\\"Faculty of Computing\\\",\\n  \\\"userType\\\": \\\"STUDENT\\\",\\n  \\\"vehicleType\\\": \\\"CAR\\\",\\n  \\\"vehicleRegistrationNumber\\\": \\\"{{uniqueRegistrationNumber}}\\\",\\n  \\\"googleId\\\": \\\"123456789\\\",\\n  \\\"fullName\\\": \\\"John Doe\\\"\\n}\",
+          "type": "application/x-www-form-urlencoded"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "auth", "register"]
+        },
+        "description": "Register a new user with vehicle information"
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Prepare login data with a known Google ID from registration",
+              "pm.environment.set('login_google_id', '123456789');",
+              "pm.environment.set('login_email', pm.environment.get('uniqueEmail'));",
+              "pm.environment.set('login_fullName', 'John Doe');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// @ts-check",
+              "const responseJson = pm.response.json();",
+              "",
+              "// Test 1: Status code is 200 OK",
+              "pm.test('Status code is 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Test 2: Response indicates success",
+              "pm.test('Response indicates success', function () {",
+              "  pm.expect(responseJson).to.have.property('success', true);",
+              "});",
+              "",
+              "// Test 3: Response contains required properties",
+              "pm.test('Response has required properties',  function () {",
+              "  pm.expect(responseJson).to.have.property('message');",
+              "  pm.expect(responseJson).to.have.property('token');",
+              "  pm.expect(responseJson).to.have.property('user');",
+              "});",
+              "",
+              "// Test 4: JWT token is valid format",
+              "pm.test('Token is valid JWT format', function () {",
+              "  const token = responseJson.token;",
+              "  pm.expect(token).to.match(/^[A-Za-z0-9-_=]+\\\\.[A-Za-z0-9-_=]+\\\\.?[A-Za-z0-9-_.+/=]*$/);",
+              "});",
+              "",
+              "// Test 5: User object contains required fields",
+              "pm.test('User object has required fields', function () {",
+              "  const user = responseJson.user;",
+              "  pm.expect(user).to.have.property('id');",
+              "  pm.expect(user).to.have.property('email');",
+              "  pm.expect(user).to.have.property('fullName');",
+              "  pm.expect(user).to.have.property('roles');",
+              "});",
+              "",
+              "// Test 6: Response time is reasonable",
+              "pm.test('Response time is less than 1000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(1000);",
+              "});",
+              "",
+              "// Store token for subsequent requests",
+              "if (responseJson.success && responseJson.token) {",
+              "  pm.environment.set('auth_token', responseJson.token);",
+              "  pm.environment.set('user_id', responseJson.user.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\\n  \\\"googleId\\\": \\\"{{login_google_id}}\\\",\\n  \\\"email\\\": \\\"{{login_email}}\\\",\\n  \\\"fullName\\\": \\\"{{login_fullName}}\\\",\\n  \\\"imageUrl\\\": \\\"https://example.com/profile.jpg\\\"\\n}\"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "auth", "login"]
+        },
+        "description": "Login user with Google OAuth credentials"
+      }
+    },
+    {
+      "name": "Register - Duplicate Email",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// @ts-check",
+              "const responseJson = pm.response.json();",
+              "",
+              "// Test 1: Status code is 400 Bad Request",
+              "pm.test('Status code is 400 Bad Request', function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "// Test 2: Response indicates failure",
+              "pm.test('Response indicates failure', function () {",
+              "  pm.expect(responseJson).to.have.property('success', false);",
+              "});",
+              "",
+              "// Test 3: Error message mentions email already registered",
+              "pm.test('Error message is appropriate', function () {",
+              "  pm.expect(responseJson.message).to.include('Email already registered');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\\n  \\\"fullName\\\": \\\"Jane Doe\\\",\\n  \\\"email\\\": \\\"{{uniqueEmail}}\\\",\\n  \\\"universityId\\\": \\\"IT99999\\\",\\n  \\\"phoneNumber\\\": \\\"0712345679\\\",\\n  \\\"faculty\\\": \\\"Faculty of Engineering\\\",\\n  \\\"userType\\\": \\\"STUDENT\\\",\\n  \\\"vehicleType\\\": \\\"BIKE\\\",\\n  \\\"vehicleRegistrationNumber\\\": \\\"BIKE-999\\\",\\n  \\\"googleId\\\": \\\"987654321\\\"\\n}\"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "auth", "register"]
+        },
+        "description": "Attempt to register with duplicate email"
+      }
+    },
+    {
+      "name": "Register - Duplicate University ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// @ts-check",
+              "const responseJson = pm.response.json();",
+              "",
+              "// Test: Error message mentions University ID already registered",
+              "pm.test('Error message mentions University ID', function () {",
+              "  pm.expect(responseJson.message).to.include('University ID already registered');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\\n  \\\"fullName\\\": \\\"Another Person\\\",\\n  \\\"email\\\": \\\"another@sliit.lk\\\",\\n  \\\"universityId\\\": \\\"{{uniqueUniversityId}}\\\",\\n  \\\"phoneNumber\\\": \\\"0787654321\\\",\\n  \\\"faculty\\\": \\\"Faculty of Business\\\",\\n  \\\"userType\\\": \\\"STAFF\\\",\\n  \\\"vehicleType\\\": \\\"THREE_WHEELER\\\",\\n  \\\"vehicleRegistrationNumber\\\": \\\"TW-123\\\",\\n  \\\"googleId\\\": \\\"555666777\\\"\\n}\"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "auth", "register"]
+        },
+        "description": "Attempt to register with duplicate University ID"
+      }
+    },
+    {
+      "name": "Login - User Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// @ts-check",
+              "const responseJson = pm.response.json();",
+              "",
+              "// Test 1: Status code is 401 Unauthorized",
+              "pm.test('Status code is 401 Unauthorized', function () {",
+              "  pm.response.to.have.status(401);",
+              "});",
+              "",
+              "// Test 2: Response indicates failure",
+              "pm.test('Response indicates failure', function () {",
+              "  pm.expect(responseJson).to.have.property('success', false);",
+              "});",
+              "",
+              "// Test 3: Error message is appropriate",
+              "pm.test('Error message mentions user not found', function () {",
+              "  pm.expect(responseJson.message).to.include('User not found');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\\n  \\\"googleId\\\": \\\"nonexistent-google-id\\\",\\n  \\\"email\\\": \\\"nonexistent@sliit.lk\\\",\\n  \\\"fullName\\\": \\\"Non Existent User\\\",\\n  \\\"imageUrl\\\": \\\"https://example.com/profile.jpg\\\"\\n}\"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "auth", "login"]
+        },
+        "description": "Attempt to login with non-existent user"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "timestamp",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uniqueEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uniqueUniversityId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uniqueRegistrationNumber",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "login_google_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "login_email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "login_fullName",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
