@@ -11,11 +11,11 @@
 **Route:** `/book/:slotId`
 **Access:** USER, WARDEN
 
-Slot booking form page. Users can select date, time range, and enter vehicle details for a chosen slot. Real-time conflict detection runs on every date/time change via API call.
+Slot booking form page. Users can request a booking for a resource by providing date, time range, purpose, and expected attendees. Real-time conflict detection runs on every date/time change via API call to prevent scheduling conflicts for the same resource.
 
 **Components Used:**
 - `SlotCard` – displays selected slot summary at the top
-- `InputField` – date picker, vehicle registration input, purpose textarea
+- `InputField` – date picker, vehicle registration input, purpose textarea, expected attendees input
 - `TimeSlotPicker` – start time and end time selector
 - `VehicleTypeBadge` – confirms vehicle type
 - `StatusBadge` – shows "CONFLICT DETECTED" warning banner
@@ -31,13 +31,14 @@ Slot booking form page. Users can select date, time range, and enter vehicle det
 | Start Time | Time picker | Required |
 | End Time | Time picker | Required, must be after start time |
 | Vehicle Registration | Text input | Required |
-| Purpose | Textarea | Optional, max 200 characters |
+| Purpose | Textarea | Required, max 200 characters |
+| Expected Attendees | Number input | Optional, where applicable |
 
 **Behavior:**
-- On date/time change → triggers real-time conflict check via API
+- On date/time change → triggers real-time conflict check via API to detect overlapping time ranges
 - If conflict exists → red warning banner rendered
 - On submit → `ConfirmModal` opens → on confirm → POST request → `Toast` shown
-- Booking created with `PENDING` status, awaits admin approval
+- Booking created with `PENDING` status, enters PENDING → APPROVED/REJECTED workflow
 
 ---
 
@@ -89,7 +90,7 @@ Full detail view of a single booking with status timeline and admin notes.
 |---|---|
 | Status Banner | Large status badge with timestamp |
 | Slot Info | Zone, slot number, type, location |
-| Booking Info | Date, time range, vehicle reg, purpose |
+| Booking Info | Date, time range, vehicle reg, purpose, expected attendees |
 | Admin Notes | Rejection reason (if REJECTED) |
 | Timeline | Status history with timestamps |
 
@@ -104,7 +105,7 @@ Full detail view of a single booking with status timeline and admin notes.
 **Route:** `/admin/bookings`
 **Access:** ADMIN only
 
-Admin-facing page to review, approve, or reject all booking requests system-wide.
+Admin-facing page to review, approve, or reject all booking requests system-wide with a reason. Admin can view all bookings with filters applied.
 
 **Components Used:**
 - `SearchBar` – search by user name or slot number
@@ -153,34 +154,56 @@ Booking-relevant StatCards and sections contributed:
 
 ---
 
-# Backend
+# Backend (Spring Boot)
 
-## API Endpoints Implemented
-
-### Booking Management
-
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `POST` | `/api/bookings` | USER, WARDEN | Create a new booking request (status: PENDING) |
-| `GET` | `/api/bookings/my` | USER, WARDEN | Get all bookings for the logged-in user |
-| `GET` | `/api/bookings/:bookingId` | USER, ADMIN | Get full detail of a single booking |
-| `PATCH` | `/api/bookings/:bookingId/cancel` | USER, WARDEN | Cancel a PENDING or APPROVED booking |
-| `GET` | `/api/bookings` | ADMIN | Get all bookings system-wide (with filters) |
-| `PATCH` | `/api/bookings/:bookingId/approve` | ADMIN | Approve a PENDING booking |
-| `PATCH` | `/api/bookings/:bookingId/reject` | ADMIN | Reject a booking with a reason |
+## Technology Stack
+- **Framework:** Spring Boot (REST API)
+- **ORM:** Spring Data JPA (Hibernate)
+- **Database:** MySQL / PostgreSQL
+- **Security:** Spring Security with role-based access (USER, WARDEN, ADMIN)
+- **Build Tool:** Maven
 
 ---
 
-### Conflict Detection
+## Controller – `BookingController`
 
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/api/bookings/conflict-check` | USER, WARDEN | Check if a slot has an overlapping booking for a given date/time range |
+**Base Mapping:** `@RequestMapping("/api/bookings")`
 
-**Query Parameters:**
+| HTTP Method | Endpoint | Annotation | Access | Description |
+|---|---|---|---|---|
+| `POST` | `/api/bookings` | `@PostMapping` | USER, WARDEN | Submit a new booking request (status defaults to PENDING) |
+| `GET` | `/api/bookings/my` | `@GetMapping("/my")` | USER, WARDEN | Get all bookings belonging to the authenticated user |
+| `GET` | `/api/bookings/{bookingId}` | `@GetMapping("/{bookingId}")` | USER, ADMIN | Get full detail of a single booking by ID |
+| `PATCH` | `/api/bookings/{bookingId}/cancel` | `@PatchMapping("/{bookingId}/cancel")` | USER, WARDEN | Cancel a PENDING or APPROVED booking |
+| `GET` | `/api/bookings` | `@GetMapping` | ADMIN | Get all bookings system-wide with optional filters |
+| `PATCH` | `/api/bookings/{bookingId}/approve` | `@PatchMapping("/{bookingId}/approve")` | ADMIN | Approve a PENDING booking |
+| `PATCH` | `/api/bookings/{bookingId}/reject` | `@PatchMapping("/{bookingId}/reject")` | ADMIN | Reject a booking with a mandatory reason |
+| `GET` | `/api/bookings/conflict-check` | `@GetMapping("/conflict-check")` | USER, WARDEN | Check for overlapping bookings on the same resource |
+
+---
+
+## Request / Response DTOs
+
+### `BookingRequestDTO` (used in `POST /api/bookings`)
+```java
+private Long slotId;
+private LocalDate date;
+private LocalTime startTime;
+private LocalTime endTime;
+private String vehicleReg;
+private String purpose;          // max 200 chars
+private Integer expectedAttendees; // nullable, where applicable
 ```
-slotId    – ID of the slot being checked
-date      – Booking date (YYYY-MM-DD)
+
+### `RejectRequestDTO` (used in `PATCH /{bookingId}/reject`)
+```java
+private String reason; // required
+```
+
+### Conflict Check Query Parameters (`GET /conflict-check`)
+```
+slotId    – ID of the resource/slot being checked
+date      – Booking date (yyyy-MM-dd)
 startTime – Start time (HH:mm)
 endTime   – End time (HH:mm)
 ```
@@ -192,87 +215,192 @@ endTime   – End time (HH:mm)
 }
 ```
 
-Triggered on every date/time field change from the frontend (P08 Book a Slot Page).
-
 ---
 
-## Business Logic
+## Service – `BookingService`
 
-### Booking Creation (`POST /api/bookings`)
-- Validates date is not in the past
+### `createBooking(BookingRequestDTO dto, Long userId)`
+- Validates `date` is not in the past
 - Validates `endTime` is after `startTime`
-- Runs a conflict check before persisting — rejects if overlapping booking exists for the same slot
-- Creates booking with status `PENDING`
-- Returns created booking object
+- Calls conflict check — throws `ConflictException` if overlapping booking exists for the same resource and time range
+- Persists booking with status `PENDING`
+- Logs initial status entry in `BookingStatusHistory`
 
-### Booking Cancellation (`PATCH /api/bookings/:bookingId/cancel`)
-- Only allowed if booking status is `PENDING` or `APPROVED`
-- Ownership check – user can only cancel their own bookings
-- Updates status to `CANCELLED`
+### `cancelBooking(Long bookingId, Long userId)`
+- Fetches booking by ID, throws `NotFoundException` if not found
+- Verifies ownership — throws `ForbiddenException` if user does not own the booking
+- Validates status is `PENDING` or `APPROVED` — throws `InvalidStateException` otherwise
+- Updates status to `CANCELLED`, logs history entry
 
-### Admin Approve (`PATCH /api/bookings/:bookingId/approve`)
+### `approveBooking(Long bookingId)`
+- ADMIN only (enforced via `@PreAuthorize`)
+- Updates status from `PENDING` to `APPROVED`
+- Logs history entry with timestamp
+
+### `rejectBooking(Long bookingId, String reason)`
 - ADMIN only
-- Updates booking status from `PENDING` to `APPROVED`
+- Updates status to `REJECTED`, stores `adminNotes`
+- Logs history entry with timestamp
 
-### Admin Reject (`PATCH /api/bookings/:bookingId/reject`)
+### `checkConflict(Long slotId, LocalDate date, LocalTime startTime, LocalTime endTime)`
+- Queries `BookingRepository` for any APPROVED or PENDING bookings on the same slot where time ranges overlap
+- Returns `true` if conflict found, `false` otherwise
+
+### `getAllBookings(BookingFilterParams params)`
 - ADMIN only
-- Requires `reason` field in request body
-- Updates booking status to `REJECTED`, stores admin notes
+- Supports filtering by `status`, `zoneId`, `dateFrom`, `dateTo`, `search` (user name or slot number)
+- Returns paginated result
 
-### Status History / Timeline
-- Each status change (PENDING → APPROVED / REJECTED / CANCELLED) is recorded with a timestamp
-- Exposed via the booking detail response for frontend timeline rendering (P10)
+### `getMyBookings(Long userId, BookingStatus status)`
+- Returns all bookings for the authenticated user
+- Optional `status` filter matches tab selection on P09
 
 ---
 
-## Database Schema (Booking-Related Tables)
+## Entity – `Booking`
 
-### `Booking`
+```java
+@Entity
+@Table(name = "bookings")
+public class Booking {
 
-| Field | Type | Notes |
-|---|---|---|
-| `id` | UUID | Primary key |
-| `userId` | FK → User | Booking owner |
-| `slotId` | FK → ParkingSlot | Target slot |
-| `date` | Date | Booking date |
-| `startTime` | Time | Booking start time |
-| `endTime` | Time | Booking end time |
-| `vehicleReg` | String | Vehicle registration number |
-| `purpose` | String? | Optional reason (max 200 chars) |
-| `status` | Enum | PENDING, APPROVED, REJECTED, CANCELLED |
-| `adminNotes` | String? | Rejection reason from admin |
-| `createdAt` | DateTime | Auto-generated |
-| `updatedAt` | DateTime | Auto-updated |
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-### `BookingStatusHistory`
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-| Field | Type | Notes |
-|---|---|---|
-| `id` | UUID | Primary key |
-| `bookingId` | FK → Booking | Associated booking |
-| `status` | Enum | Status at this point |
-| `changedAt` | DateTime | Timestamp of status change |
-| `changedBy` | FK → User | Who triggered the change |
+    @ManyToOne
+    @JoinColumn(name = "slot_id", nullable = false)
+    private ParkingSlot slot;
+
+    @Column(nullable = false)
+    private LocalDate date;
+
+    @Column(nullable = false)
+    private LocalTime startTime;
+
+    @Column(nullable = false)
+    private LocalTime endTime;
+
+    @Column(nullable = false)
+    private String vehicleReg;
+
+    @Column(length = 200)
+    private String purpose;
+
+    @Column
+    private Integer expectedAttendees; // nullable, where applicable
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookingStatus status; // PENDING, APPROVED, REJECTED, CANCELLED
+
+    @Column
+    private String adminNotes; // populated on rejection
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+}
+```
+
+### `BookingStatus` Enum
+```java
+public enum BookingStatus {
+    PENDING,
+    APPROVED,
+    REJECTED,
+    CANCELLED
+}
+```
+
+**Allowed Workflow Transitions:**
+```
+PENDING → APPROVED
+PENDING → REJECTED
+PENDING → CANCELLED
+APPROVED → CANCELLED
+```
 
 ---
 
-## Filters & Query Parameters
+## Entity – `BookingStatusHistory`
 
-### `GET /api/bookings` (Admin)
+```java
+@Entity
+@Table(name = "booking_status_history")
+public class BookingStatusHistory {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "booking_id", nullable = false)
+    private Booking booking;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookingStatus status;
+
+    @Column(nullable = false)
+    private LocalDateTime changedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "changed_by")
+    private User changedBy;
+}
+```
+
+Records every status change with a timestamp and the user who triggered it. Exposed via booking detail response for timeline rendering on P10.
+
+---
+
+## Repository – `BookingRepository`
+
+```java
+public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    // Get all bookings by user
+    List<Booking> findByUserId(Long userId);
+
+    // Get bookings by user filtered by status
+    List<Booking> findByUserIdAndStatus(Long userId, BookingStatus status);
+
+    // Conflict detection query
+    @Query("""
+        SELECT COUNT(b) > 0 FROM Booking b
+        WHERE b.slot.id = :slotId
+        AND b.date = :date
+        AND b.status IN ('PENDING', 'APPROVED')
+        AND b.startTime < :endTime
+        AND b.endTime > :startTime
+    """)
+    boolean existsConflict(
+        @Param("slotId") Long slotId,
+        @Param("date") LocalDate date,
+        @Param("startTime") LocalTime startTime,
+        @Param("endTime") LocalTime endTime
+    );
+}
+```
+
+---
+
+## Admin Filter Params – `BookingFilterParams`
 
 | Parameter | Type | Description |
 |---|---|---|
-| `status` | Enum? | Filter by booking status |
-| `zoneId` | UUID? | Filter by parking zone |
-| `dateFrom` | Date? | Date range start |
-| `dateTo` | Date? | Date range end |
-| `search` | String? | Search by user name or slot number |
-
-### `GET /api/bookings/my` (User)
-
-| Parameter | Type | Description |
-|---|---|---|
-| `status` | Enum? | Filter by booking status (matches tab selection on P09) |
+| `status` | `BookingStatus?` | Filter by booking status |
+| `zoneId` | `Long?` | Filter by parking zone |
+| `dateFrom` | `LocalDate?` | Date range start |
+| `dateTo` | `LocalDate?` | Date range end |
+| `search` | `String?` | Search by user name or slot number |
 
 ---
 
