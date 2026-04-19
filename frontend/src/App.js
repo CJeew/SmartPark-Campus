@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 import './App.css';
 
 const GOOGLE_CLIENT_ID = '645115511045-86514437mn48ffcsq67s7t9v32doqfrj.apps.googleusercontent.com';
@@ -14,10 +17,18 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboard />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
-          {/* Placeholder routes - implement these components later */}
           <Route path="/dashboard" element={<div className="p-8"><h1 className="text-2xl font-bold">User Dashboard</h1><p>Coming soon...</p></div>} />
-          <Route path="/admin/dashboard" element={<div className="p-8"><h1 className="text-2xl font-bold">Admin Dashboard</h1><p>Coming soon...</p></div>} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>
