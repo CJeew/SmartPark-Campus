@@ -5,6 +5,8 @@ import com.SmartPark.Campus.SmartPark.Campus.dto.AdminStatsResponse;
 import com.SmartPark.Campus.SmartPark.Campus.dto.AuthResponse;
 import com.SmartPark.Campus.SmartPark.Campus.entity.Role;
 import com.SmartPark.Campus.SmartPark.Campus.entity.User;
+import com.SmartPark.Campus.SmartPark.Campus.entity.Booking;
+import com.SmartPark.Campus.SmartPark.Campus.repository.BookingRepository;
 import com.SmartPark.Campus.SmartPark.Campus.repository.UserRepository;
 import com.SmartPark.Campus.SmartPark.Campus.repository.VehicleRepository;
 import com.SmartPark.Campus.SmartPark.Campus.util.JwtTokenProvider;
@@ -24,6 +26,9 @@ public class AdminService {
 
     @Autowired
     private VehicleRepository vehicleRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -73,8 +78,10 @@ public class AdminService {
         long totalUsers = allUsers.size();
         long activeUsers = allUsers.stream().filter(User::getIsActive).count();
         long totalVehicles = vehicleRepository.count();
+        long totalBookings = bookingRepository.count();
+        long pendingBookings = bookingRepository.countByStatus(Booking.BookingStatus.PENDING);
 
-        return new AdminStatsResponse(totalUsers, totalVehicles, activeUsers);
+        return new AdminStatsResponse(totalUsers, totalVehicles, activeUsers, totalBookings, pendingBookings);
     }
 
     public List<AuthResponse.UserResponse> getAllUsers() {

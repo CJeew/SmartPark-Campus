@@ -38,4 +38,24 @@ export const adminService = {
   },
 
   isLoggedIn: () => !!localStorage.getItem('adminToken'),
+
+  getBookings: async (status, zone, dateRange) => {
+    const params = new URLSearchParams();
+    if (status && status !== 'all') params.append('status', status);
+    if (zone && zone !== 'all') params.append('zone', zone);
+    if (dateRange && dateRange !== 'all') params.append('dateRange', dateRange);
+    const response = await fetch(`${API_URL}/admin/bookings?${params}`, { headers: authHeader() });
+    if (!response.ok) throw new Error('Unauthorized');
+    return response.json();
+  },
+
+  updateBookingStatus: async (bookingId, status, reason) => {
+    const response = await fetch(`${API_URL}/admin/bookings/${bookingId}/status`, {
+      method: 'PUT',
+      headers: authHeader(),
+      body: JSON.stringify({ status, reason }),
+    });
+    if (!response.ok) throw new Error('Failed to update booking');
+    return response.json();
+  },
 };

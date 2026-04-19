@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import AdminBookings from './pages/AdminBookings';
 import './App.css';
 
 const GOOGLE_CLIENT_ID = '645115511045-86514437mn48ffcsq67s7t9v32doqfrj.apps.googleusercontent.com';
@@ -23,6 +24,14 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <AdminDashboard />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/bookings"
+            element={
+              <AdminProtectedRoute>
+                <AdminBookings />
               </AdminProtectedRoute>
             }
           />

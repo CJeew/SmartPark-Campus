@@ -1,3 +1,9 @@
+
+Email: admin@smartpark.com
+Password: admin123
+
+
+
 # Contribution – Member 2
 ## StudyBridge Parking Management System
 
