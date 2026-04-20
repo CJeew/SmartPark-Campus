@@ -209,6 +209,14 @@ Frontend opens at http://localhost:3000
 - [x] Automatic login after registration
 - [x] Dashboard redirection
 
+### P13 - My Tickets Page ✅
+- [x] Route: `/my-tickets` (protected)
+- [x] Tabs: All / Open / In Progress / Resolved / Closed
+- [x] Ticket list with `TicketCard` (status/priority/tag)
+- [x] Empty state + loading skeleton
+- [x] Create ticket: `/tickets/new`
+- [x] Ticket details + update/delete: `/tickets/:ticketId`
+
 ### Components ✅
 - [x] InputField.js
 - [x] Button.js

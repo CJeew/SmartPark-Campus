@@ -4,6 +4,7 @@ import com.SmartPark.Campus.SmartPark.Campus.dto.AuthResponse;
 import com.SmartPark.Campus.SmartPark.Campus.dto.LoginRequest;
 import com.SmartPark.Campus.SmartPark.Campus.dto.RegisterRequest;
 import com.SmartPark.Campus.SmartPark.Campus.service.AuthService;
+import com.SmartPark.Campus.SmartPark.Campus.util.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -39,11 +43,23 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> getCurrentUser(@RequestHeader("Authorization") String token) {
         try {
-            // Extract user ID from token (format: "Bearer <token>")
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new AuthResponse(false, "Missing Bearer token", null, null));
+            }
+
             String actualToken = token.substring(7);
-            // You would normally validate and parse the token here
-            // For now, this is a placeholder
-            return ResponseEntity.ok(new AuthResponse(false, "Token parsing not implemented", null, null));
+            if (!jwtTokenProvider.validateToken(actualToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new AuthResponse(false, "Invalid token", null, null));
+            }
+
+            Long userId = Long.valueOf(jwtTokenProvider.getUserIdFromToken(actualToken));
+            AuthResponse response = authService.getCurrentUser(userId);
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponse(false, "Invalid token", null, null));

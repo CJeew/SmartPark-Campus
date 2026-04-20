@@ -170,8 +170,8 @@ const Register = () => {
         setSuccess('Registration successful! Redirecting to dashboard...');
         setTimeout(() => {
           const user = response.user;
-          const hasAdminRole = user.roles.includes('ADMIN');
-          navigate(hasAdminRole ? '/admin/dashboard' : '/dashboard');
+        const hasAdminRole = user.roles.includes('ADMIN');
+        navigate(hasAdminRole ? '/admin/dashboard' : '/dashboard');
         }, 1500);
       } else {
         setError(response.message || 'Registration failed');
@@ -330,13 +330,13 @@ const Register = () => {
 
         {/* Footer */}
         <div className="border-t border-gray-300 mt-8 pt-6 flex justify-center gap-4 text-sm">
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
+          <button type="button" className="text-gray-600 hover:text-blue-600 transition">
             Privacy Policy
-          </a>
+          </button>
           <span className="text-gray-400">•</span>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
+          <button type="button" className="text-gray-600 hover:text-blue-600 transition">
             Terms of Service
-          </a>
+          </button>
         </div>
       </div>
     </div>

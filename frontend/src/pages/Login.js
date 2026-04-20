@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
-import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { authService } from '../services/authService';
 
 const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    setLoading(true);
     setError('');
 
     try {
@@ -43,8 +40,6 @@ const Login = () => {
       }
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -101,13 +96,13 @@ const Login = () => {
 
         {/* Footer Links */}
         <div className="border-t border-gray-300 mt-8 pt-6 flex justify-center gap-4 text-sm">
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
+          <button type="button" className="text-gray-600 hover:text-blue-600 transition">
             Privacy Policy
-          </a>
+          </button>
           <span className="text-gray-400">•</span>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
+          <button type="button" className="text-gray-600 hover:text-blue-600 transition">
             Terms of Service
-          </a>
+          </button>
         </div>
       </div>
     </div>
