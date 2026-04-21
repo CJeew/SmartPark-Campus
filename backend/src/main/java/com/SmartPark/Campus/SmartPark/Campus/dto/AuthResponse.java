@@ -64,6 +64,7 @@ public class AuthResponse {
         private UserType userType;
         private List<RoleType> roles;
         private List<VehicleResponse> vehicles;
+        private Boolean isActive;
 
         public UserResponse() {
         }
@@ -152,6 +153,14 @@ public class AuthResponse {
 
         public void setVehicles(List<VehicleResponse> vehicles) {
             this.vehicles = vehicles;
+        }
+
+        public Boolean getIsActive() {
+            return isActive;
+        }
+
+        public void setIsActive(Boolean isActive) {
+            this.isActive = isActive;
         }
     }
 

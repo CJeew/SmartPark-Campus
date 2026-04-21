@@ -86,15 +86,34 @@ public class AdminService {
 
     public List<AuthResponse.UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(user -> {
-                    List<Role.RoleType> roles = user.getRoles().stream()
-                            .map(Role::getName)
-                            .collect(Collectors.toList());
-                    return new AuthResponse.UserResponse(
-                            user.getId(), user.getEmail(), user.getFullName(), user.getUniversityId(),
-                            user.getPhoneNumber(), user.getFaculty(), user.getUserType(), roles, List.of()
-                    );
-                })
+                .map(this::toUserResponse)
                 .collect(Collectors.toList());
+    }
+
+    public AuthResponse.UserResponse toggleUserStatus(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(r -> r.getName() == Role.RoleType.ADMIN);
+        if (isAdmin) {
+            throw new RuntimeException("Cannot deactivate an admin account");
+        }
+
+        user.setIsActive(!user.getIsActive());
+        User saved = userRepository.save(user);
+        return toUserResponse(saved);
+    }
+
+    private AuthResponse.UserResponse toUserResponse(User user) {
+        List<Role.RoleType> roles = user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toList());
+        AuthResponse.UserResponse response = new AuthResponse.UserResponse(
+                user.getId(), user.getEmail(), user.getFullName(), user.getUniversityId(),
+                user.getPhoneNumber(), user.getFaculty(), user.getUserType(), roles, List.of()
+        );
+        response.setIsActive(user.getIsActive());
+        return response;
     }
 }

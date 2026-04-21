@@ -37,4 +37,14 @@ public class AdminController {
     public ResponseEntity<List<AuthResponse.UserResponse>> getAllUsers() {
         return ResponseEntity.ok(adminService.getAllUsers());
     }
+
+    @PutMapping("/users/{id}/status")
+    public ResponseEntity<?> toggleUserStatus(@PathVariable Long id) {
+        try {
+            AuthResponse.UserResponse updated = adminService.toggleUserStatus(id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
