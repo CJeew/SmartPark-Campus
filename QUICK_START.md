@@ -35,6 +35,14 @@ EXIT;
 
 ## 🔧 Backend Setup (8 minutes)
 
+### Environment Setup (Recommended)
+
+`application.properties` now reads secrets from environment variables.
+
+1. Copy `backend/.env.example` to `backend/.env`
+2. Fill your own values for OAuth, JWT, and database connection
+3. Run backend using the helper script below
+
 **Terminal 1 - Backend**:
 
 ```bash
@@ -44,8 +52,8 @@ cd backend
 # 2. Clean and install dependencies
 mvnw clean install
 
-# 3. Run the server
-mvnw spring-boot:run
+# 3. Run the server (loads backend/.env automatically)
+powershell -ExecutionPolicy Bypass -File .\start-backend.ps1
 ```
 
 **Wait for**:

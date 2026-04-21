@@ -94,6 +94,12 @@ const Icons = {
         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   ),
+  helmet: (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M6 18V8a6 6 0 0112 0v10m-12 0h12m-12 0a2 2 0 002 2h8a2 2 0 002-2" />
+    </svg>
+  ),
   logout: (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -227,6 +233,7 @@ const AdminDashboard = () => {
           <NavItem icon={Icons.dashboard} label="Dashboard" active />
           <NavItem icon={Icons.users}     label="Users"         onClick={() => navigate('/admin/users')} />
           <NavItem icon={Icons.zone}      label="Parking Zones" onClick={() => {}} />
+          <NavItem icon={Icons.helmet}    label="Helmet Rack"   onClick={() => navigate('/admin/helmet-rack')} />
           <NavItem
             icon={Icons.bookings}
             label="Bookings"
@@ -272,6 +279,12 @@ const AdminDashboard = () => {
             >
               {Icons.refresh}
               Refresh
+            </button>
+            <button
+              onClick={() => navigate('/admin/helmet-rack')}
+              className="px-4 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Helmet Rack
             </button>
             <button
               onClick={() => navigate('/admin/bookings')}
