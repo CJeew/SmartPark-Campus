@@ -3,6 +3,19 @@ import React, { useState } from 'react';
 const FilterDropdown = ({ label, options, value, onChange, error, required = false }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Helper to get label from option (handle both string and object formats)
+  const getOptionLabel = (option) => {
+    return typeof option === 'object' ? option.label : option;
+  };
+
+  // Helper to get value from option (handle both string and object formats)
+  const getOptionValue = (option) => {
+    return typeof option === 'object' ? option.value : option;
+  };
+
+  // Get the current label to display
+  const displayLabel = options.find(opt => getOptionValue(opt) === value)?.label || value || 'Select an option';
+
   return (
     <div className="mb-4">
       {label && (
@@ -19,7 +32,7 @@ const FilterDropdown = ({ label, options, value, onChange, error, required = fal
             error ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'
           }`}
         >
-          <span>{value || 'Select an option'}</span>
+          <span>{displayLabel}</span>
           <svg
             className={`w-4 h-4 transition ${isOpen ? 'rotate-180' : ''}`}
             fill="none"
@@ -34,15 +47,15 @@ const FilterDropdown = ({ label, options, value, onChange, error, required = fal
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
             {options.map((option) => (
               <button
-                key={option}
+                key={getOptionValue(option)}
                 type="button"
                 onClick={() => {
-                  onChange(option);
+                  onChange(getOptionValue(option));
                   setIsOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-blue-50 transition"
               >
-                {option}
+                {getOptionLabel(option)}
               </button>
             ))}
           </div>
