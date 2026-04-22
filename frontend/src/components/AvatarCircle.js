@@ -1,24 +1,46 @@
 import React from 'react';
 
-const COLORS = [
-  'bg-blue-500', 'bg-purple-500', 'bg-green-500',
-  'bg-orange-500', 'bg-pink-500', 'bg-teal-500',
-];
+const AvatarCircle = ({ src, name, size = 'md', online = false }) => {
+  const sizeMap = {
+    sm: { width: 32, height: 32, fontSize: 12 },
+    md: { width: 48, height: 48, fontSize: 14 },
+    lg: { width: 72, height: 72, fontSize: 18 },
+    xl: { width: 120, height: 120, fontSize: 28 },
+  };
 
-const AvatarCircle = ({ name = '', size = 'md' }) => {
+  const sizeStyle = sizeMap[size];
   const initials = name
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
+    ?.split(' ')
+    .map(n => n[0])
     .join('')
-    .toUpperCase();
-
-  const colorIndex = name.charCodeAt(0) % COLORS.length;
-  const sizeClass = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
+    .toUpperCase()
+    .slice(0, 2) || 'U';
 
   return (
-    <div className={`${COLORS[colorIndex]} ${sizeClass} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`}>
-      {initials || '?'}
+    <div
+      className="relative inline-flex items-center justify-center rounded-full bg-blue-100 text-white font-bold"
+      style={sizeStyle}
+    >
+      {src ? (
+        <img
+          src={src}
+          alt={name}
+          className="w-full h-full rounded-full object-cover"
+        />
+      ) : (
+        <span style={{ fontSize: `${sizeStyle.fontSize * 0.8}px`, color: '#2563EB' }}>
+          {initials}
+        </span>
+      )}
+      {online && (
+        <div
+          className="absolute bottom-0 right-0 bg-green-500 rounded-full border-2 border-white"
+          style={{
+            width: sizeStyle.width / 4,
+            height: sizeStyle.height / 4,
+          }}
+        />
+      )}
     </div>
   );
 };

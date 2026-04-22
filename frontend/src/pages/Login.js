@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
-import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { authService } from '../services/authService';
 
@@ -15,7 +14,6 @@ const Login = () => {
     setError('');
 
     try {
-      // Decode the JWT token from Google
       const token = credentialResponse.credential;
       const decoded = JSON.parse(atob(token.split('.')[1]));
 
@@ -29,9 +27,8 @@ const Login = () => {
       const response = await authService.login(loginData);
 
       if (response.success) {
-        // Redirect based on role
         const user = response.user;
-        const hasAdminRole = user.roles.includes('ADMIN');
+        const hasAdminRole = user.roles && user.roles.includes('ADMIN');
         
         if (hasAdminRole) {
           navigate('/admin/dashboard');
@@ -53,61 +50,108 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      {error && <Toast message={error} type="error" onClose={() => setError('')} />}
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 flex items-center justify-center p-4">
+      {error && <Toast message={error} type="error" duration={4000} />}
 
-      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
-        {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">🚗</h1>
-          <h2 className="text-2xl font-bold text-gray-800 mt-4">SmartPark</h2>
-          <p className="text-gray-600 mt-2">Campus Vehicle Parking System</p>
+      {/* Left side - Branding (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center text-white pr-12">
+        <div className="space-y-6">
+          <div>
+            <div className="text-8xl font-bold mb-4">🚗</div>
+            <h1 className="text-5xl font-bold mb-2">SmartPark</h1>
+            <p className="text-xl text-blue-100">Campus Vehicle Parking System</p>
+          </div>
+          <div className="space-y-4 pt-8">
+            <div className="flex items-start gap-4">
+              <span className="text-3xl">⏱️</span>
+              <div>
+                <h3 className="text-xl font-semibold">Quick & Easy</h3>
+                <p className="text-blue-100">Book parking slots in seconds</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <span className="text-3xl">🎯</span>
+              <div>
+                <h3 className="text-xl font-semibold">Real-time Availability</h3>
+                <p className="text-blue-100">See available slots instantly</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <span className="text-3xl">📱</span>
+              <div>
+                <h3 className="text-xl font-semibold">Manage Reports</h3>
+                <p className="text-blue-100">Report and track maintenance issues</p>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Divider */}
-        <div className="border-b border-gray-300 mb-8"></div>
-
-        {/* Main Content */}
-        <div className="text-center">
-          <p className="text-gray-700 mb-6 font-medium">Sign in with your SLIIT Google Account</p>
-
-          <div className="mb-6">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              theme="outline"
-              size="large"
-              width="100%"
-            />
+      {/* Right side - Login Form */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-4">
+        <div className="w-full max-w-md">
+          {/* Mobile Header */}
+          <div className="lg:hidden text-center mb-8 text-white">
+            <h1 className="text-4xl font-bold mb-2">SmartPark</h1>
+            <p className="text-blue-100">Campus Parking Hub</p>
           </div>
 
-          <div className="border-b border-gray-300 my-6 relative">
-            <span className="bg-white px-2 text-gray-600 text-sm absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              or
-            </span>
+          {/* Login Card */}
+          <div className="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
+            {/* Card Header */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
+              <p className="text-gray-600 mt-2">Sign in to your account</p>
+            </div>
+
+            {/* Login Section */}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Sign in with your SLIIT Google Account
+                </label>
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    theme="outline"
+                    size="large"
+                    width="100%"
+                  />
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500 font-medium">New to SmartPark?</span>
+                </div>
+              </div>
+
+              {/* Register Link */}
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 text-blue-600 font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
+              >
+                Create an Account
+              </button>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+              <p className="text-xs text-gray-500">
+                By signing in, you agree to our Terms of Service and Privacy Policy
+              </p>
+            </div>
           </div>
 
-          {/* Register Link */}
-          <p className="text-gray-700 mt-6">
-            Don't have an account?{' '}
-            <button
-              onClick={() => navigate('/register')}
-              className="text-blue-600 font-semibold hover:text-blue-700 transition"
-            >
-              Register here
-            </button>
-          </p>
-        </div>
-
-        {/* Footer Links */}
-        <div className="border-t border-gray-300 mt-8 pt-6 flex justify-center gap-4 text-sm">
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
-            Privacy Policy
-          </a>
-          <span className="text-gray-400">•</span>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
-            Terms of Service
-          </a>
+          {/* Security Note */}
+          <div className="mt-6 text-center text-white text-sm">
+            <p>🔒 Your data is secure and encrypted</p>
+          </div>
         </div>
       </div>
     </div>
@@ -115,3 +159,5 @@ const Login = () => {
 };
 
 export default Login;
+
+
