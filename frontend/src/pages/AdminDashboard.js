@@ -226,7 +226,7 @@ const AdminDashboard = () => {
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           <NavItem icon={Icons.dashboard} label="Dashboard" active />
           <NavItem icon={Icons.users}     label="Users"         onClick={() => navigate('/admin/users')} />
-          <NavItem icon={Icons.zone}      label="Parking Zones" onClick={() => {}} />
+          <NavItem icon={Icons.zone}      label="Parking Zones" onClick={() => navigate('/admin/zones')} />
           <NavItem
             icon={Icons.bookings}
             label="Bookings"

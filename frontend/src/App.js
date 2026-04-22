@@ -6,6 +6,10 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminBookings from './pages/AdminBookings';
+import AdminParkingZones from './pages/AdminParkingZones';
 import Header from './components/Header';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
@@ -33,7 +37,10 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             {/* Placeholder routes - implement these components later */}
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<div className="p-8"><h1 className="text-2xl font-bold">Admin Dashboard</h1><p>Coming soon...</p></div>} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/bookings" element={<AdminBookings />} />
+            <Route path="/admin/zones" element={<AdminParkingZones />} />
           </Routes>
         </Router>
       </ToastProvider>
