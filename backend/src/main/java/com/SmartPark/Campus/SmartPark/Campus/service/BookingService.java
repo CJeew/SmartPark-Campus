@@ -5,6 +5,7 @@ import com.SmartPark.Campus.SmartPark.Campus.dto.BookingStatusRequest;
 import com.SmartPark.Campus.SmartPark.Campus.entity.Booking;
 import com.SmartPark.Campus.SmartPark.Campus.repository.BookingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +23,9 @@ public class BookingService {
     private BookingRepository bookingRepository;
 
     public List<BookingResponse> getBookings(String statusStr, String zone, String dateRange) {
-        Booking.BookingStatus status = null;
+        String status = null;
         if (statusStr != null && !statusStr.isBlank() && !statusStr.equalsIgnoreCase("all")) {
-            try {
-                status = Booking.BookingStatus.valueOf(statusStr.toUpperCase());
-            } catch (IllegalArgumentException ignored) {}
+            status = statusStr.toUpperCase();
         }
 
         String zoneName = (zone != null && !zone.isBlank() && !zone.equalsIgnoreCase("all")) ? zone : null;
@@ -44,8 +43,17 @@ public class BookingService {
             }
         }
 
-        return bookingRepository.findWithFilters(status, zoneName, startDate, endDate)
+            final String statusFilter = status;
+            final String zoneFilter = zoneName;
+            final LocalDateTime startDateFilter = startDate;
+            final LocalDateTime endDateFilter = endDate;
+
+        return bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream()
+                .filter(booking -> statusFilter == null || booking.getStatus().name().equals(statusFilter))
+                .filter(booking -> zoneFilter == null || booking.getSlot().getZone().getName().equals(zoneFilter))
+                .filter(booking -> startDateFilter == null || !booking.getCreatedAt().isBefore(startDateFilter))
+                .filter(booking -> endDateFilter == null || !booking.getCreatedAt().isAfter(endDateFilter))
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }

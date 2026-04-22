@@ -13,13 +13,13 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b WHERE " +
-           "(:status IS NULL OR b.status = :status) AND " +
+           "(:status IS NULL OR CAST(b.status as string) = :status) AND " +
            "(:zoneName IS NULL OR b.slot.zone.name = :zoneName) AND " +
            "(:startDate IS NULL OR b.createdAt >= :startDate) AND " +
            "(:endDate IS NULL OR b.createdAt <= :endDate) " +
            "ORDER BY b.createdAt DESC")
     List<Booking> findWithFilters(
-            @Param("status") Booking.BookingStatus status,
+            @Param("status") String status,
             @Param("zoneName") String zoneName,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
