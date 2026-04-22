@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import AdminLogin from './pages/AdminLogin';
 import Header from './components/Header';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
@@ -31,6 +32,7 @@ function App() {
             <Route path="/profile/edit" element={<ProtectedRoute component={Profile} />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             {/* Placeholder routes - implement these components later */}
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<div className="p-8"><h1 className="text-2xl font-bold">Admin Dashboard</h1><p>Coming soon...</p></div>} />
           </Routes>
         </Router>
