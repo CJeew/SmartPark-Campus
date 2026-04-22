@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { adminService } from '../services/adminService';
+import AdminSidebar from '../components/AdminSidebar';
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 const Skeleton = ({ className }) => (
@@ -93,9 +93,6 @@ const Icons = {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 const AdminUsers = () => {
-  const navigate  = useNavigate();
-  const admin     = adminService.getAdmin();
-
   const [users,         setUsers]         = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState('');
@@ -148,11 +145,6 @@ const AdminUsers = () => {
     }
   };
 
-  const handleLogout = () => {
-    adminService.logout();
-    navigate('/admin/login');
-  };
-
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     const matchSearch =
@@ -174,44 +166,7 @@ const AdminUsers = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-
-      {/* ── Sidebar ── */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0">
-        <div className="px-6 py-5 border-b border-gray-700/60">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-sm font-bold">S</div>
-            <div>
-              <h1 className="text-base font-bold leading-tight">SmartPark</h1>
-              <p className="text-gray-400 text-xs">Admin Panel</p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
-          <NavItem icon={Icons.dashboard} label="Dashboard" onClick={() => navigate('/admin/dashboard')} />
-          <NavItem icon={Icons.users}     label="Users"     active />
-          <NavItem icon={Icons.bookings}  label="Bookings"  onClick={() => navigate('/admin/bookings')}
-            badge={stats?.pendingBookings} />
-        </nav>
-
-        <div className="px-3 py-4 border-t border-gray-700/60">
-          <div className="flex items-center gap-3 px-3 py-2 mb-1">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {admin?.fullName?.charAt(0)?.toUpperCase() ?? 'A'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{admin?.fullName ?? 'Admin'}</p>
-              <p className="text-xs text-gray-400 truncate">{admin?.email ?? ''}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-          >
-            {Icons.logout} Sign Out
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar pendingBookings={stats?.pendingBookings ?? 0} />
 
       {/* ── Main ── */}
       <main className="flex-1 overflow-auto">
