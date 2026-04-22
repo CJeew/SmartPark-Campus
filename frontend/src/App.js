@@ -9,7 +9,6 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
-import AdminParkingZones from './pages/AdminParkingZones';
 import Header from './components/Header';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
@@ -40,7 +39,6 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/bookings" element={<AdminBookings />} />
-            <Route path="/admin/zones" element={<AdminParkingZones />} />
           </Routes>
         </Router>
       </ToastProvider>

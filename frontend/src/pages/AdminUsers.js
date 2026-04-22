@@ -190,7 +190,6 @@ const AdminUsers = () => {
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           <NavItem icon={Icons.dashboard} label="Dashboard" onClick={() => navigate('/admin/dashboard')} />
           <NavItem icon={Icons.users}     label="Users"     active />
-          <NavItem icon={Icons.zone}      label="Parking Zones" onClick={() => navigate('/admin/zones')} />
           <NavItem icon={Icons.bookings}  label="Bookings"  onClick={() => navigate('/admin/bookings')}
             badge={stats?.pendingBookings} />
         </nav>
