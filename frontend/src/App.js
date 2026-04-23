@@ -9,6 +9,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
+import ZoneManagement from './pages/admin/ZoneManagement';
 import Header from './components/Header';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
@@ -39,6 +40,7 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/bookings" element={<AdminBookings />} />
+            <Route path="/admin/zones" element={<ZoneManagement />} />
           </Routes>
         </Router>
       </ToastProvider>

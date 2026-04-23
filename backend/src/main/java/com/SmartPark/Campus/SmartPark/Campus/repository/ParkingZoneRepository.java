@@ -2,12 +2,16 @@ package com.SmartPark.Campus.SmartPark.Campus.repository;
 
 import com.SmartPark.Campus.SmartPark.Campus.entity.ParkingZone;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface ParkingZoneRepository extends JpaRepository<ParkingZone, Long> {
+public interface ParkingZoneRepository
+        extends JpaRepository<ParkingZone, Long>, JpaSpecificationExecutor<ParkingZone> {
+
     boolean existsByName(String name);
-    List<ParkingZone> findByIsActiveTrue();
+
+    boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }
