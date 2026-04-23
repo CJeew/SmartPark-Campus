@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Component
+// @Component  // Disabled: causes EntityManagerFactory closed error during startup
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired private UserRepository userRepository;
