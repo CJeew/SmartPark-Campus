@@ -55,7 +55,12 @@ const AdminBookings = () => {
   const handleConfirm = async (reason) => {
     setActionLoading(true);
     try {
-      await adminService.updateBookingStatus(modal.booking.id, modal.action, reason);
+      const bookingId = modal.booking?.id ?? modal.booking?.bookingId;
+      if (!bookingId) {
+        throw new Error('Invalid booking id');
+      }
+
+      await adminService.updateBookingStatus(bookingId, modal.action, reason);
       setToast({
         message: modal.action === 'APPROVED' ? 'Booking approved successfully' : 'Booking rejected',
         type: modal.action === 'APPROVED' ? 'success' : 'error',
@@ -125,7 +130,7 @@ const AdminBookings = () => {
           <div className="space-y-3">
             {displayed.map((booking) => (
               <BookingCard
-                key={booking.id}
+                key={booking.id ?? booking.bookingId}
                 booking={booking}
                 onApprove={openApprove}
                 onReject={openReject}
@@ -140,6 +145,7 @@ const AdminBookings = () => {
         isOpen={modal.open}
         action={modal.action}
         bookingUser={modal.booking?.userFullName}
+        loading={actionLoading}
         onConfirm={handleConfirm}
         onCancel={closeModal}
       />

@@ -25,7 +25,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("endDate") LocalDateTime endDate
     );
 
+    boolean existsBySlot_Id(Long slotId);
+
     long countByStatus(Booking.BookingStatus status);
 
     long countBySlot_Zone_Id(Long zoneId);
+
+    List<Booking> findByUser_Id(Long userId);
+
+    List<Booking> findByUser_IdAndStatus(Long userId, Booking.BookingStatus status);
+
+    // Find overlapping bookings for conflict detection
+    @Query("SELECT b FROM Booking b WHERE b.slot.id = :slotId " +
+           "AND b.status IN ('PENDING', 'APPROVED') " +
+           "AND ((b.startTime < :endTime AND b.endTime > :startTime))")
+    List<Booking> findConflictingBookings(
+            @Param("slotId") Long slotId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
 }

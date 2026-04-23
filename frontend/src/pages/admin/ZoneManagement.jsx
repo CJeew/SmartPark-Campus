@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AdminSidebar from '../../components/AdminSidebar';
 import ZoneTable from '../../components/parking/ZoneTable';
 import ZoneFormModal from '../../components/parking/ZoneFormModal';
+import SlotManagementModal from '../../components/parking/SlotManagementModal';
 import { useParkingZones } from '../../hooks/useParkingZones';
 import { parkingZoneService } from '../../services/parkingZoneService';
 import { ZONE_TYPES, ZONE_STATUSES, ZONE_TYPE_LABELS, ZONE_STATUS_LABELS } from '../../constants/parkingConstants';
@@ -13,6 +14,7 @@ const ZoneManagement = () => {
   const [saving, setSaving] = useState(false);
   const [modalError, setModalError] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [slotZone, setSlotZone] = useState(null);
   const [toast, setToast] = useState(null);
 
   const showToast = (msg, type = 'success') => {
@@ -174,6 +176,7 @@ const ZoneManagement = () => {
               onEdit={openEdit}
               onStatusChange={handleStatusChange}
               onDelete={setDeleteTarget}
+              onManageSlots={setSlotZone}
             />
 
             {/* Pagination */}
@@ -203,6 +206,15 @@ const ZoneManagement = () => {
           </div>
         </div>
       </main>
+
+      {/* Slot Management Modal */}
+      {slotZone && (
+        <SlotManagementModal
+          zone={slotZone}
+          onClose={() => setSlotZone(null)}
+          onChanged={reload}
+        />
+      )}
 
       {/* Form Modal */}
       {modalOpen && (

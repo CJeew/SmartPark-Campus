@@ -43,6 +43,7 @@ public class ParkingZoneServiceImpl implements ParkingZoneService {
     private JdbcTemplate jdbcTemplate;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ParkingZoneResponse> findAll(String type, String status, String location,
                                               Integer minCapacity, Integer maxCapacity,
                                               String search, int page, int size) {
@@ -78,6 +79,7 @@ public class ParkingZoneServiceImpl implements ParkingZoneService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ParkingZoneResponse findById(Long id) {
         ParkingZone zone = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parking zone not found with id: " + id));

@@ -4,22 +4,23 @@ import Button from './Button';
 import AvatarCircle from './AvatarCircle';
 
 const BookingCard = ({
-  bookingId,
-  slotNumber,
-  zoneName,
-  vehicleType,
-  date,
-  startTime,
-  endTime,
-  status,
-  userName,
-  userAvatar,
-  rejectionReason,
+  booking,
   onApprove,
   onReject,
   onCancel,
   onViewDetails,
 }) => {
+  const slotNumber = booking?.slotNumber;
+  const zoneName = booking?.zoneName;
+  const vehicleType = booking?.vehicleType;
+  const date = booking?.date;
+  const startTime = booking?.startTime;
+  const endTime = booking?.endTime;
+  const status = booking?.status;
+  const userName = booking?.userFullName || booking?.userName;
+  const userAvatar = booking?.userAvatar;
+  const rejectionReason = booking?.rejectionReason;
+
   return (
     <div className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
       <div className="flex items-start justify-between mb-4">
@@ -58,16 +59,16 @@ const BookingCard = ({
 
       <div className="flex gap-2">
         {onViewDetails && (
-          <Button label="View Details" onClick={onViewDetails} variant="ghost" size="sm" />
+          <Button label="View Details" onClick={() => onViewDetails(booking)} variant="ghost" size="sm" />
         )}
         {onApprove && (
-          <Button label="Approve" onClick={onApprove} variant="success" size="sm" />
+          <Button label="Approve" onClick={() => onApprove(booking)} variant="success" size="sm" />
         )}
         {onReject && (
-          <Button label="Reject" onClick={onReject} variant="danger" size="sm" />
+          <Button label="Reject" onClick={() => onReject(booking)} variant="danger" size="sm" />
         )}
         {onCancel && (
-          <Button label="Cancel" onClick={onCancel} variant="danger" size="sm" />
+          <Button label="Cancel" onClick={() => onCancel(booking)} variant="danger" size="sm" />
         )}
       </div>
     </div>

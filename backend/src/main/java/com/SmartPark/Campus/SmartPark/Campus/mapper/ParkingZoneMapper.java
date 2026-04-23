@@ -6,6 +6,9 @@ import com.SmartPark.Campus.SmartPark.Campus.entity.ParkingZone;
 import com.SmartPark.Campus.SmartPark.Campus.entity.ZoneStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class ParkingZoneMapper {
 
@@ -47,6 +50,16 @@ public class ParkingZoneMapper {
         res.setAvailabilityWindows(zone.getAvailabilityWindows());
         res.setCreatedAt(zone.getCreatedAt());
         res.setUpdatedAt(zone.getUpdatedAt());
+        if (zone.getSlots() != null) {
+            List<ParkingZoneResponse.SlotDto> slotDtos = zone.getSlots().stream()
+                    .map(s -> new ParkingZoneResponse.SlotDto(
+                            s.getId(),
+                            s.getSlotNumber(),
+                            s.getVehicleType().name(),
+                            s.getIsAvailable()))
+                    .collect(Collectors.toList());
+            res.setSlots(slotDtos);
+        }
         return res;
     }
 

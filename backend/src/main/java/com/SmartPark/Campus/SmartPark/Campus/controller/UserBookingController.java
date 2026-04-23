@@ -2,7 +2,6 @@ package com.SmartPark.Campus.SmartPark.Campus.controller;
 
 import com.SmartPark.Campus.SmartPark.Campus.dto.BookingRequest;
 import com.SmartPark.Campus.SmartPark.Campus.dto.BookingResponse;
-import com.SmartPark.Campus.SmartPark.Campus.dto.BookingStatusRequest;
 import com.SmartPark.Campus.SmartPark.Campus.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,31 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/bookings")
+@RequestMapping("/api/v1/bookings")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class BookingController {
+public class UserBookingController {
 
     @Autowired
     private BookingService bookingService;
 
-    @GetMapping
-    public ResponseEntity<List<BookingResponse>> getBookings(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String zone,
-            @RequestParam(required = false) String dateRange
-    ) {
-        return ResponseEntity.ok(bookingService.getBookings(status, zone, dateRange));
-    }
-
-    @PutMapping("/{id}/status")
-    public ResponseEntity<BookingResponse> updateStatus(
-            @PathVariable Long id,
-            @RequestBody BookingStatusRequest request
-    ) {
-        return ResponseEntity.ok(bookingService.updateStatus(id, request));
-    }
-
-    // User endpoints for creating and viewing bookings
     @PostMapping("/create")
     public ResponseEntity<?> createBooking(
             @RequestHeader("X-User-Id") Long userId,

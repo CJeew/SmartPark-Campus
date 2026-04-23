@@ -19,8 +19,34 @@ public class ParkingZoneResponse {
     private ZoneStatus status;
     private String description;
     private List<AvailabilityWindow> availabilityWindows;
+    private List<SlotDto> slots;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public static class SlotDto {
+        private Long id;
+        private String slotNumber;
+        private String vehicleType;
+        private boolean isAvailable;
+
+        public SlotDto() {}
+
+        public SlotDto(Long id, String slotNumber, String vehicleType, boolean isAvailable) {
+            this.id = id;
+            this.slotNumber = slotNumber;
+            this.vehicleType = vehicleType;
+            this.isAvailable = isAvailable;
+        }
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getSlotNumber() { return slotNumber; }
+        public void setSlotNumber(String slotNumber) { this.slotNumber = slotNumber; }
+        public String getVehicleType() { return vehicleType; }
+        public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
+        public boolean getIsAvailable() { return isAvailable; }
+        public void setIsAvailable(boolean isAvailable) { this.isAvailable = isAvailable; }
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -42,6 +68,8 @@ public class ParkingZoneResponse {
     public void setDescription(String description) { this.description = description; }
     public List<AvailabilityWindow> getAvailabilityWindows() { return availabilityWindows; }
     public void setAvailabilityWindows(List<AvailabilityWindow> availabilityWindows) { this.availabilityWindows = availabilityWindows; }
+    public List<SlotDto> getSlots() { return slots; }
+    public void setSlots(List<SlotDto> slots) { this.slots = slots; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

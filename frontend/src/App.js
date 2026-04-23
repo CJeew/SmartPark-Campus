@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import ParkingZones from './pages/ParkingZones';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
@@ -26,7 +27,12 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <ToastProvider>
-        <Router>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Header />
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -34,8 +40,9 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute component={Dashboard} />} />
             <Route path="/profile" element={<ProtectedRoute component={Profile} />} />
             <Route path="/profile/edit" element={<ProtectedRoute component={Profile} />} />
+            <Route path="/zones" element={<ProtectedRoute component={ParkingZones} />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
-            {/* Placeholder routes - implement these components later */}
+            {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />

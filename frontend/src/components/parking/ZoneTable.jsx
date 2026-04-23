@@ -6,7 +6,7 @@ const Skeleton = ({ className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 );
 
-const ZoneTable = ({ zones, loading, onEdit, onStatusChange, onDelete }) => {
+const ZoneTable = ({ zones, loading, onEdit, onStatusChange, onDelete, onManageSlots }) => {
   if (loading) {
     return (
       <div className="p-6 space-y-3">
@@ -76,6 +76,12 @@ const ZoneTable = ({ zones, loading, onEdit, onStatusChange, onDelete }) => {
                 </td>
                 <td className="px-6 py-3">
                   <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => onManageSlots(zone)}
+                      className="text-xs px-2.5 py-1 text-purple-600 hover:bg-purple-50 rounded-md transition-colors font-medium"
+                    >
+                      Slots
+                    </button>
                     <button
                       onClick={() => onEdit(zone)}
                       className="text-xs px-2.5 py-1 text-blue-600 hover:bg-blue-50 rounded-md transition-colors font-medium"
