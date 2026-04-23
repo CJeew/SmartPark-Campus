@@ -10,10 +10,13 @@ import com.SmartPark.Campus.SmartPark.Campus.mapper.ParkingZoneMapper;
 import com.SmartPark.Campus.SmartPark.Campus.repository.BookingRepository;
 import com.SmartPark.Campus.SmartPark.Campus.repository.ParkingZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ParkingZoneServiceImpl implements ParkingZoneService {
+
+    private static final Logger log = LoggerFactory.getLogger(ParkingZoneServiceImpl.class);
 
     @Autowired
     private ParkingZoneRepository repository;
@@ -114,8 +119,19 @@ public class ParkingZoneServiceImpl implements ParkingZoneService {
     public ParkingZoneResponse updateStatus(Long id, ZoneStatus status) {
         ParkingZone zone = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parking zone not found with id: " + id));
-        zone.setStatus(status);
-        return mapper.toResponse(repository.save(zone));
+
+        try {
+            zone.setStatus(status);
+            return mapper.toResponse(repository.save(zone));
+        } catch (DataIntegrityViolationException ex) {
+            // Some legacy schemas still constrain status values and may reject MAINTENANCE.
+            if (status == ZoneStatus.MAINTENANCE) {
+                log.warn("MAINTENANCE status rejected by DB constraint for zone {}. Falling back to OUT_OF_SERVICE.", id);
+                zone.setStatus(ZoneStatus.OUT_OF_SERVICE);
+                return mapper.toResponse(repository.save(zone));
+            }
+            throw ex;
+        }
     }
 
     @Override

@@ -88,7 +88,7 @@ const ZoneTable = ({ zones, loading, onEdit, onStatusChange, onDelete }) => {
                       className="text-xs border border-gray-200 rounded px-1.5 py-1 text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400"
                     >
                       <option value="ACTIVE">Active</option>
-                      <option value="MAINTENANCE">Maintenance</option>
+                      
                       <option value="OUT_OF_SERVICE">Out of Service</option>
                     </select>
                     <button

@@ -64,8 +64,12 @@ const ZoneManagement = () => {
 
   const handleStatusChange = async (id, status) => {
     try {
-      await parkingZoneService.updateStatus(id, status);
-      showToast('Status updated');
+      const updated = await parkingZoneService.updateStatus(id, status);
+      if (status === 'MAINTENANCE' && updated?.status === 'OUT_OF_SERVICE') {
+        showToast('Maintenance is not supported by current DB schema; set to Out of Service instead', 'error');
+      } else {
+        showToast('Status updated');
+      }
       reload();
     } catch (err) {
       showToast(err.message || 'Failed to update status', 'error');
