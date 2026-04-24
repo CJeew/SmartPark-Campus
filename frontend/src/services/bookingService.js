@@ -40,6 +40,17 @@ export const bookingService = {
     }).then(handleResponse);
   },
 
+  cancelBooking: async (bookingId) => {
+    return fetch(`${API_BASE}/${bookingId}/cancel`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${getAuthToken()}`,
+        'X-User-Id': getUserId(),
+        'Content-Type': 'application/json'
+      }
+    }).then(handleResponse);
+  },
+
   getUserBookingsByStatus: async (status) => {
     return fetch(`${API_BASE}/user/status/${status}`, {
       headers: {

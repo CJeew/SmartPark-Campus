@@ -115,6 +115,28 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    public BookingResponse cancelBooking(Long bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (!booking.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized to cancel this booking");
+        }
+
+        if (booking.getStatus() == Booking.BookingStatus.CANCELLED) {
+            throw new IllegalArgumentException("Booking is already cancelled");
+        }
+
+        if (booking.getStatus() == Booking.BookingStatus.REJECTED) {
+            throw new IllegalArgumentException("Cannot cancel a rejected booking");
+        }
+
+        booking.setStatus(Booking.BookingStatus.CANCELLED);
+        booking.getSlot().setIsAvailable(true);
+
+        return toResponse(bookingRepository.save(booking));
+    }
+
     public List<BookingResponse> getUserBookingsByStatus(Long userId, String status) {
         try {
             Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
