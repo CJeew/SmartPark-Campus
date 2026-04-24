@@ -19,8 +19,13 @@ const Header = () => {
     }
   }, []);
 
-  // Hide header on login/register pages
-  if (location.pathname === '/login' || location.pathname === '/register') {
+  // Hide header on login/register/dashboard pages
+  if (
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/dashboard' ||
+    location.pathname === '/zones'
+  ) {
     return null;
   }
 
