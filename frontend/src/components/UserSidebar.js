@@ -114,7 +114,7 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
           <NavItem
             icon={Icons.profile}
             label="My Profile"
-            active={false}
+            active={activeSection === 'profile'}
             onClick={() => navigate('/profile')}
           />
         </div>

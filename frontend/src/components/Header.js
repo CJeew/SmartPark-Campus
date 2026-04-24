@@ -23,7 +23,8 @@ const Header = () => {
   if (
     location.pathname === '/login' ||
     location.pathname === '/register' ||
-    location.pathname === '/dashboard'
+    location.pathname === '/dashboard' ||
+    location.pathname === '/zones'
   ) {
     return null;
   }
