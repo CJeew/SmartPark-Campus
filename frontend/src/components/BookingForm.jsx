@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import '../styles/BookingForm.css';
 
+const MIN_BOOKING_MINUTES = 30;
+const MAX_BOOKING_HOURS = 8;
+const MAX_PURPOSE_LENGTH = 500;
+const MIN_PURPOSE_LENGTH = 10;
+
 const BookingForm = ({ selectedSlot, zones, onSubmit, loading }) => {
   const [formData, setFormData] = useState({
     startDate: '',
@@ -18,26 +23,67 @@ const BookingForm = ({ selectedSlot, zones, onSubmit, loading }) => {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+    // Clear time error when either time field changes
+    if ((name === 'startTime' || name === 'endTime') && errors.time) {
+      setErrors(prev => ({ ...prev, time: '' }));
+    }
   };
 
   const validateForm = () => {
     const newErrors = {};
+    const now = new Date();
 
-    if (!formData.startDate) newErrors.startDate = 'Start date is required';
-    if (!formData.startTime) newErrors.startTime = 'Start time is required';
-    if (!formData.endTime) newErrors.endTime = 'End time is required';
-    if (!formData.purpose) newErrors.purpose = 'Purpose is required';
     if (!selectedSlot) newErrors.slot = 'Please select a parking slot';
 
-    if (formData.startTime && formData.endTime) {
-      const [startHour, startMin] = formData.startTime.split(':').map(Number);
-      const [endHour, endMin] = formData.endTime.split(':').map(Number);
-      const startMinutes = startHour * 60 + startMin;
-      const endMinutes = endHour * 60 + endMin;
+    if (!formData.startDate) {
+      newErrors.startDate = 'Start date is required';
+    }
 
-      if (startMinutes >= endMinutes) {
-        newErrors.time = 'End time must be after start time';
+    if (!formData.startTime) {
+      newErrors.startTime = 'Start time is required';
+    }
+
+    if (!formData.endTime) {
+      newErrors.endTime = 'End time is required';
+    }
+
+    // Validate start datetime is not in the past
+    if (formData.startDate && formData.startTime) {
+      const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+      if (startDateTime <= now) {
+        newErrors.startTime = 'Start time must be in the future';
       }
+    }
+
+    // Validate time range and duration
+    if (formData.startTime && formData.endTime && !newErrors.startTime) {
+      const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+      const endDateTime = new Date(`${formData.startDate}T${formData.endTime}`);
+      const diffMinutes = (endDateTime - startDateTime) / (1000 * 60);
+
+      if (diffMinutes <= 0) {
+        newErrors.time = 'End time must be after start time';
+      } else if (diffMinutes < MIN_BOOKING_MINUTES) {
+        newErrors.time = `Minimum booking duration is ${MIN_BOOKING_MINUTES} minutes`;
+      } else if (diffMinutes > MAX_BOOKING_HOURS * 60) {
+        newErrors.time = `Maximum booking duration is ${MAX_BOOKING_HOURS} hours`;
+      }
+    }
+
+    const trimmedPurpose = formData.purpose.trim();
+    if (!trimmedPurpose) {
+      newErrors.purpose = 'Purpose is required';
+    } else if (trimmedPurpose.length < MIN_PURPOSE_LENGTH) {
+      newErrors.purpose = `Purpose must be at least ${MIN_PURPOSE_LENGTH} characters`;
+    } else if (trimmedPurpose.length > MAX_PURPOSE_LENGTH) {
+      newErrors.purpose = `Purpose cannot exceed ${MAX_PURPOSE_LENGTH} characters`;
+    }
+
+    const attendees = parseInt(formData.expectedAttendees);
+    if (isNaN(attendees) || attendees < 1) {
+      newErrors.expectedAttendees = 'Expected attendees must be at least 1';
+    } else if (attendees > 100) {
+      newErrors.expectedAttendees = 'Expected attendees cannot exceed 100';
     }
 
     setErrors(newErrors);
@@ -56,7 +102,7 @@ const BookingForm = ({ selectedSlot, zones, onSubmit, loading }) => {
       slotId: selectedSlot.id,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
-      purpose: formData.purpose,
+      purpose: formData.purpose.trim(),
       expectedAttendees: parseInt(formData.expectedAttendees)
     });
   };
@@ -147,7 +193,7 @@ const BookingForm = ({ selectedSlot, zones, onSubmit, loading }) => {
           <h3>Booking Details</h3>
           
           <div className="form-group">
-            <label htmlFor="purpose">Purpose of Booking *</label>
+            <label htmlFor="purpose">Purpose of Booking * <small style={{ fontWeight: 'normal', color: '#888' }}>(min 10, max 500 chars)</small></label>
             <textarea
               id="purpose"
               name="purpose"
@@ -155,13 +201,19 @@ const BookingForm = ({ selectedSlot, zones, onSubmit, loading }) => {
               onChange={handleChange}
               placeholder="e.g., Faculty meeting, Campus event, etc."
               rows={3}
+              maxLength={500}
               className={errors.purpose ? 'error' : ''}
             />
-            {errors.purpose && <span className="error-text">{errors.purpose}</span>}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              {errors.purpose ? <span className="error-text">{errors.purpose}</span> : <span />}
+              <small style={{ color: formData.purpose.length > 480 ? '#e53e3e' : '#aaa', marginLeft: 'auto' }}>
+                {formData.purpose.length}/500
+              </small>
+            </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="expectedAttendees">Expected Attendees</label>
+            <label htmlFor="expectedAttendees">Expected Attendees *</label>
             <input
               type="number"
               id="expectedAttendees"
@@ -170,7 +222,9 @@ const BookingForm = ({ selectedSlot, zones, onSubmit, loading }) => {
               onChange={handleChange}
               min={1}
               max={100}
+              className={errors.expectedAttendees ? 'error' : ''}
             />
+            {errors.expectedAttendees && <span className="error-text">{errors.expectedAttendees}</span>}
           </div>
         </div>
 
