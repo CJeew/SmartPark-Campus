@@ -18,7 +18,7 @@ const ParkingZones = () => {
   const loadZones = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await parkingZoneService.getAll(0, 100);
+      const data = await parkingZoneService.getAll({ page: 0, size: 100 });
       setZones(data.content || []);
     } catch (error) {
       console.error('Failed to load zones:', error);
