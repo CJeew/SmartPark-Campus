@@ -3,8 +3,8 @@
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
+  background: #111827;
+  border-radius: 0;
 }
 
 /* ── Header ── */
@@ -16,29 +16,29 @@
 }
 
 .slot-selector-header h3 {
-  color: white;
+  color: #f9fafb;
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .zone-selector {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 2px solid rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.15);
-  color: white;
-  font-size: 0.95rem;
+  padding: 7px 12px;
+  border-radius: 7px;
+  border: 1px solid #374151;
+  background: #1f2937;
+  color: #f9fafb;
+  font-size: 0.85rem;
   cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: background 0.2s;
+  transition: background 0.15s, border-color 0.15s;
   outline: none;
 }
 
 .zone-selector:hover,
 .zone-selector:focus {
-  background: rgba(255,255,255,0.25);
+  background: #374151;
+  border-color: #2563eb;
 }
 
 .zone-selector option {
