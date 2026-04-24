@@ -1,7 +1,7 @@
 const BASE = 'http://localhost:8080/api/v1/parking-zones';
 
 const authHeader = () => ({
-  'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+  'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('adminToken')}`,
   'Content-Type': 'application/json',
 });
 
