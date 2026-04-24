@@ -42,6 +42,22 @@ public class UserBookingController {
         return ResponseEntity.ok(bookingService.getUserBookings(userId));
     }
 
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long userId
+    ) {
+        try {
+            BookingResponse booking = bookingService.cancelBooking(id, userId);
+            return ResponseEntity.ok(booking);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/user/status/{status}")
     public ResponseEntity<List<BookingResponse>> getUserBookingsByStatus(
             @RequestHeader("X-User-Id") Long userId,

@@ -11,7 +11,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
 import ZoneManagement from './pages/admin/ZoneManagement';
-import Header from './components/Header';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
 
@@ -33,7 +32,7 @@ function App() {
             v7_relativeSplatPath: true,
           }}
         >
-          <Header />
+          
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
