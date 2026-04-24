@@ -532,31 +532,23 @@ const Dashboard = () => {
           {/* ── MY BOOKINGS ── */}
           {activeSection === 'my-bookings' && (
             <div className="space-y-5">
-              {/* Filter tabs + refresh */}
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-                  {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'].map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setBookingStatusFilter(s)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-                        bookingStatusFilter === s
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
-                    </button>
+
+              {/* Summary stat chips */}
+              {!bookingsLoading && userBookings.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { label: 'Total',     count: userBookings.length,                                               color: 'bg-gray-100 text-gray-700' },
+                    { label: 'Pending',   count: userBookings.filter(b => b.status === 'PENDING').length,   color: 'bg-amber-100 text-amber-700' },
+                    { label: 'Approved',  count: userBookings.filter(b => b.status === 'APPROVED').length,  color: 'bg-green-100 text-green-700' },
+                    { label: 'Rejected',  count: userBookings.filter(b => b.status === 'REJECTED').length,  color: 'bg-red-100 text-red-700' },
+                    { label: 'Cancelled', count: userBookings.filter(b => b.status === 'CANCELLED').length, color: 'bg-gray-100 text-gray-500' },
+                  ].map(({ label, count, color }) => (
+                    <span key={label} className={`px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
+                      {label}: {count}
+                    </span>
                   ))}
                 </div>
-                <button
-                  onClick={fetchUserBookings}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <RefreshIcon />
-                  Refresh
-                </button>
-              </div>
+              )}
 
               {bookingsError && (
                 <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 text-sm text-red-700">
@@ -564,104 +556,209 @@ const Dashboard = () => {
                 </div>
               )}
 
-              {bookingsLoading ? (
-                <LoadingSkeleton type="card" count={4} />
-              ) : (() => {
-                const filtered = bookingStatusFilter === 'ALL'
-                  ? userBookings
-                  : userBookings.filter(b => b.status === bookingStatusFilter);
-
-                if (filtered.length === 0) {
-                  return (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center max-w-lg">
-                      <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-800 mb-2">
-                        {bookingStatusFilter === 'ALL' ? 'No Bookings Yet' : `No ${bookingStatusFilter.charAt(0) + bookingStatusFilter.slice(1).toLowerCase()} Bookings`}
-                      </h3>
-                      <p className="text-gray-500 text-sm mb-5">
-                        {bookingStatusFilter === 'ALL'
-                          ? "You haven't made any bookings yet."
-                          : `You have no bookings with status "${bookingStatusFilter.toLowerCase()}".`}
-                      </p>
-                      {bookingStatusFilter === 'ALL' && (
+              {/* Main panel */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                {/* Panel header with filters */}
+                <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-800">Booking History</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {bookingsLoading ? 'Loading…' : (() => {
+                        const filtered = bookingStatusFilter === 'ALL' ? userBookings : userBookings.filter(b => b.status === bookingStatusFilter);
+                        return `${filtered.length} of ${userBookings.length} booking${userBookings.length !== 1 ? 's' : ''}`;
+                      })()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                      {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'].map(s => (
                         <button
-                          onClick={() => navigate('/zones')}
-                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                          key={s}
+                          onClick={() => setBookingStatusFilter(s)}
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                            bookingStatusFilter === s
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-gray-500 hover:text-gray-700 hover:bg-white'
+                          }`}
                         >
-                          Browse Parking Zones
+                          {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
                         </button>
-                      )}
+                      ))}
+                    </div>
+                    <button
+                      onClick={fetchUserBookings}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <RefreshIcon />
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                {bookingsLoading ? (
+                  <div className="p-6 space-y-3">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <div className="animate-pulse bg-gray-200 rounded-full w-9 h-9 flex-shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="animate-pulse bg-gray-200 rounded h-3.5 w-40" />
+                          <div className="animate-pulse bg-gray-200 rounded h-3 w-64" />
+                        </div>
+                        <div className="animate-pulse bg-gray-200 rounded-full h-6 w-20" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (() => {
+                  const filtered = bookingStatusFilter === 'ALL'
+                    ? userBookings
+                    : userBookings.filter(b => b.status === bookingStatusFilter);
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="px-6 py-14 text-center">
+                        <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-base font-semibold text-gray-800 mb-1">
+                          {bookingStatusFilter === 'ALL' ? 'No Bookings Yet' : `No ${bookingStatusFilter.charAt(0) + bookingStatusFilter.slice(1).toLowerCase()} Bookings`}
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-5">
+                          {bookingStatusFilter === 'ALL'
+                            ? "You haven't made any bookings yet."
+                            : `No bookings with status "${bookingStatusFilter.toLowerCase()}".`}
+                        </p>
+                        {bookingStatusFilter === 'ALL' && (
+                          <button
+                            onClick={() => navigate('/zones')}
+                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Browse Parking Zones
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                            <th className="px-6 py-3">Slot / Zone</th>
+                            <th className="px-6 py-3">Date</th>
+                            <th className="px-6 py-3">Time</th>
+                            <th className="px-6 py-3">Vehicle</th>
+                            <th className="px-6 py-3">Purpose</th>
+                            <th className="px-6 py-3">Status</th>
+                            <th className="px-6 py-3">Note</th>
+                            <th className="px-6 py-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {filtered.map((booking, idx) => {
+                            const id = booking.id ?? booking.bookingId ?? idx;
+                            const vehicle = booking.vehicleType === 'THREE_WHEELER' ? '3-Wheeler' : booking.vehicleType;
+                            return (
+                              <tr key={id} className="hover:bg-gray-50/70 transition-colors">
+                                {/* Slot / Zone */}
+                                <td className="px-6 py-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                      {booking.slotNumber ?? '—'}
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold text-gray-800">Slot {booking.slotNumber}</p>
+                                      <p className="text-xs text-gray-400">{booking.zoneName}</p>
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Date */}
+                                <td className="px-6 py-3">
+                                  <p className="font-medium text-gray-700">{booking.date}</p>
+                                </td>
+
+                                {/* Time */}
+                                <td className="px-6 py-3">
+                                  <p className="text-gray-700">{booking.startTime}</p>
+                                  <p className="text-xs text-gray-400">to {booking.endTime}</p>
+                                </td>
+
+                                {/* Vehicle */}
+                                <td className="px-6 py-3">
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                        d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                    </svg>
+                                    {vehicle}
+                                  </span>
+                                  {booking.vehicleRegistration && (
+                                    <p className="text-xs text-gray-400 font-mono mt-1">{booking.vehicleRegistration}</p>
+                                  )}
+                                </td>
+
+                                {/* Purpose */}
+                                <td className="px-6 py-3">
+                                  <p className="text-xs text-gray-500 max-w-[120px] truncate" title={booking.purpose}>
+                                    {booking.purpose || '—'}
+                                  </p>
+                                </td>
+
+                                {/* Status */}
+                                <td className="px-6 py-3">
+                                  <StatusBadge status={booking.status} size="sm" />
+                                </td>
+
+                                {/* Note / rejection reason */}
+                                <td className="px-6 py-3 max-w-[160px]">
+                                  {booking.rejectionReason ? (
+                                    <p className="text-xs text-red-500 truncate" title={booking.rejectionReason}>
+                                      {booking.rejectionReason}
+                                    </p>
+                                  ) : (
+                                    <span className="text-xs text-gray-300">—</span>
+                                  )}
+                                </td>
+
+                                {/* Action */}
+                                <td className="px-6 py-3 text-right">
+                                  {(booking.status === 'PENDING' || booking.status === 'APPROVED') ? (
+                                    <button
+                                      onClick={() => setCancelModal({ open: true, booking })}
+                                      className="px-3 py-1 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                  ) : (
+                                    <span className="text-xs text-gray-300">—</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   );
-                }
+                })()}
+              </div>
 
-                return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filtered.map((booking, idx) => {
-                      const id = booking.id ?? booking.bookingId ?? idx;
-                      const vehicle = booking.vehicleType === 'THREE_WHEELER' ? '3-Wheeler' : booking.vehicleType;
-                      return (
-                        <div
-                          key={id}
-                          className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
-                        >
-                          {/* Header row */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <p className="text-base font-bold text-gray-800">
-                                Slot {booking.slotNumber}
-                              </p>
-                              <p className="text-xs text-gray-400 mt-0.5">{booking.zoneName}</p>
-                            </div>
-                            <StatusBadge status={booking.status} size="sm" />
-                          </div>
-
-                          {/* Details grid */}
-                          <div className="grid grid-cols-2 gap-3 mb-4">
-                            <div>
-                              <p className="text-xs text-gray-400 uppercase tracking-wide">Date</p>
-                              <p className="text-sm font-semibold text-gray-700 mt-0.5">{booking.date}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-400 uppercase tracking-wide">Vehicle</p>
-                              <p className="text-sm font-semibold text-gray-700 mt-0.5">{vehicle}</p>
-                            </div>
-                            <div className="col-span-2">
-                              <p className="text-xs text-gray-400 uppercase tracking-wide">Time</p>
-                              <p className="text-sm font-semibold text-gray-700 mt-0.5">
-                                {booking.startTime} – {booking.endTime}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Rejection reason */}
-                          {booking.rejectionReason && (
-                            <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-3">
-                              <p className="text-xs text-red-600 font-medium">Rejection Reason</p>
-                              <p className="text-xs text-red-500 mt-0.5">{booking.rejectionReason}</p>
-                            </div>
-                          )}
-
-                          {/* Cancel button — only for cancellable statuses */}
-                          {(booking.status === 'PENDING' || booking.status === 'APPROVED') && (
-                            <button
-                              onClick={() => setCancelModal({ open: true, booking })}
-                              className="w-full mt-1 px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                            >
-                              Cancel Booking
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
+              {/* Book more CTA */}
+              {!bookingsLoading && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => navigate('/zones')}
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    + Book Another Slot
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
