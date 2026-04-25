@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/tickets")
@@ -55,5 +56,40 @@ public class TicketController {
     ) {
         Long resolvedUserId = requestAuthUtil.resolveUserId(authorization, userId);
         return ResponseEntity.ok(ticketService.getTicketById(resolvedUserId, id));
+    }
+
+    // ── Admin endpoints ────────────────────────────────────────────────────────
+
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<TicketResponse>> getAllTickets(
+            @RequestHeader("Authorization") String authorization
+    ) {
+        // Auth check — only admins should call this; JWT validation handled by filter
+        return ResponseEntity.ok(ticketService.getAllTickets());
+    }
+
+    @PatchMapping("/admin/{id}/status")
+    public ResponseEntity<TicketResponse> updateTicketStatus(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable Long id,
+            @RequestParam String status
+    ) {
+        return ResponseEntity.ok(ticketService.updateTicketStatus(id, status));
+    }
+
+    @GetMapping("/admin/technicians")
+    public ResponseEntity<List<Map<String, Object>>> getTechnicians(
+            @RequestHeader("Authorization") String authorization
+    ) {
+        return ResponseEntity.ok(ticketService.getTechnicians());
+    }
+
+    @PatchMapping("/admin/{id}/assign")
+    public ResponseEntity<TicketResponse> assignTechnician(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable Long id,
+            @RequestParam(required = false) Long technicianId
+    ) {
+        return ResponseEntity.ok(ticketService.assignTechnician(id, technicianId));
     }
 }

@@ -24,6 +24,8 @@ public class TicketResponse {
     private String preferredContactPhone;
     private List<TicketAttachmentResponse> attachments;
     private LocalDateTime createdAt;
+    private Long assignedTechnicianId;
+    private String assignedTechnicianName;
 
     public TicketResponse(Long id,
                           String ticketId,
@@ -40,7 +42,9 @@ public class TicketResponse {
                           String preferredContactEmail,
                           String preferredContactPhone,
                           List<TicketAttachmentResponse> attachments,
-                          LocalDateTime createdAt) {
+                          LocalDateTime createdAt,
+                          Long assignedTechnicianId,
+                          String assignedTechnicianName) {
         this.id = id;
         this.ticketId = ticketId;
         this.title = title;
@@ -57,6 +61,8 @@ public class TicketResponse {
         this.preferredContactPhone = preferredContactPhone;
         this.attachments = attachments;
         this.createdAt = createdAt;
+        this.assignedTechnicianId = assignedTechnicianId;
+        this.assignedTechnicianName = assignedTechnicianName;
     }
 
     public Long getId() {
@@ -121,5 +127,13 @@ public class TicketResponse {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Long getAssignedTechnicianId() {
+        return assignedTechnicianId;
+    }
+
+    public String getAssignedTechnicianName() {
+        return assignedTechnicianName;
     }
 }

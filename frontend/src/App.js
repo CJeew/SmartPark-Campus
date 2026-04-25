@@ -13,6 +13,7 @@ import AdminBookings from './pages/AdminBookings';
 import TechnicianDashboard from './pages/TechnicianDashboard';
 import ZoneManagement from './pages/admin/ZoneManagement';
 import TicketCreate from './pages/TicketCreate';
+import AdminTickets from './pages/AdminTickets';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
 
@@ -51,6 +52,7 @@ function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/bookings" element={<AdminBookings />} />
             <Route path="/admin/zones" element={<ZoneManagement />} />
+            <Route path="/admin/tickets" element={<AdminTickets />} />
           </Routes>
         </Router>
       </ToastProvider>

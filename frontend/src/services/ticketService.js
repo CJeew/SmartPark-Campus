@@ -86,4 +86,34 @@ export const ticketService = {
 
     return await response.json();
   },
+
+  getTechnicians: async () => {
+    const response = await fetch(`${API_URL}/admin/technicians`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch technicians');
+    return await response.json();
+  },
+
+  assignTechnician: async (ticketId, technicianId) => {
+    const url = technicianId
+      ? `${API_URL}/admin/${ticketId}/assign?technicianId=${technicianId}`
+      : `${API_URL}/admin/${ticketId}/assign`;
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: getAuthHeader(),
+    });
+    if (!response.ok) {
+      let errorMsg = 'Failed to assign technician';
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || JSON.stringify(errorData);
+      } catch (e) {
+        errorMsg = await response.text();
+      }
+      throw new Error(errorMsg);
+    }
+    return await response.json();
+  },
 };

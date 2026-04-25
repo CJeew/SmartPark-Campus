@@ -112,12 +112,37 @@ public class TicketService {
         return toDetailResponse(ticket);
     }
 
+    /** Admin: return all tickets sorted newest-first. */
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getAllTickets() {
+        return ticketRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    /** Admin: update the status of any ticket. */
+    @Transactional
+    public TicketResponse updateTicketStatus(Long ticketId, String status) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+        try {
+            ticket.setStatus(Ticket.TicketStatus.valueOf(status.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid ticket status: " + status);
+        }
+        return toResponse(ticketRepository.save(ticket));
+    }
+
     private TicketResponse toResponse(Ticket ticket) {
         List<TicketAttachmentResponse> attachments = ticket.getAttachments() == null
                 ? List.of()
                 : ticket.getAttachments().stream()
                 .map(a -> new TicketAttachmentResponse(a.getId(), a.getFileName(), a.getContentType(), a.getSize()))
                 .collect(Collectors.toList());
+
+        Long techId = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getId() : null;
+        String techName = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getFullName() : null;
 
         return new TicketResponse(
                 ticket.getId(),
@@ -135,7 +160,9 @@ public class TicketService {
                 ticket.getPreferredContactEmail(),
                 ticket.getPreferredContactPhone(),
                 attachments,
-                ticket.getCreatedAt()
+                ticket.getCreatedAt(),
+                techId,
+                techName
         );
     }
 
@@ -148,6 +175,9 @@ public class TicketService {
                         a.getId(), a.getFileName(), a.getContentType(), a.getSize(), a.getData()))
                 .collect(Collectors.toList());
 
+        Long techId = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getId() : null;
+        String techName = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getFullName() : null;
+
         return new TicketResponse(
                 ticket.getId(),
                 ticket.getTicketId(),
@@ -164,7 +194,9 @@ public class TicketService {
                 ticket.getPreferredContactEmail(),
                 ticket.getPreferredContactPhone(),
                 attachments,
-                ticket.getCreatedAt()
+                ticket.getCreatedAt(),
+                techId,
+                techName
         );
     }
 
@@ -223,5 +255,40 @@ public class TicketService {
             return generateTemporaryTicketId();
         }
         return String.format("TK-%05d", id);
+    }
+
+    /** Admin: assign or unassign a technician to a ticket. */
+    @Transactional
+    public TicketResponse assignTechnician(Long ticketId, Long technicianId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+        if (technicianId == null) {
+            ticket.setAssignedTechnician(null);
+        } else {
+            User technician = userRepository.findById(technicianId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Technician not found"));
+            boolean isTechnician = technician.getRoles().stream()
+                    .anyMatch(r -> r.getName() == com.SmartPark.Campus.SmartPark.Campus.entity.Role.RoleType.TECHNICIAN);
+            if (!isTechnician) {
+                throw new IllegalArgumentException("User is not a technician");
+            }
+            ticket.setAssignedTechnician(technician);
+        }
+        return toResponse(ticketRepository.save(ticket));
+    }
+
+    /** Admin: list all users with the TECHNICIAN role. */
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> getTechnicians() {
+        return userRepository.findByRolesName(com.SmartPark.Campus.SmartPark.Campus.entity.Role.RoleType.TECHNICIAN)
+                .stream()
+                .map(u -> {
+                    java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    m.put("id", u.getId());
+                    m.put("fullName", u.getFullName());
+                    m.put("email", u.getEmail());
+                    return m;
+                })
+                .collect(Collectors.toList());
     }
 }

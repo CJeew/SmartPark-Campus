@@ -64,6 +64,10 @@ public class Ticket {
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User reporter;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "assigned_technician_id", nullable = true)
+    private User assignedTechnician;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -198,6 +202,14 @@ public class Ticket {
 
     public void setReporter(User reporter) {
         this.reporter = reporter;
+    }
+
+    public User getAssignedTechnician() {
+        return assignedTechnician;
+    }
+
+    public void setAssignedTechnician(User assignedTechnician) {
+        this.assignedTechnician = assignedTechnician;
     }
 
     public LocalDateTime getCreatedAt() {
