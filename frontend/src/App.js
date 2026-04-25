@@ -12,6 +12,7 @@ import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
 import TechnicianDashboard from './pages/TechnicianDashboard';
 import ZoneManagement from './pages/admin/ZoneManagement';
+import TicketCreate from './pages/TicketCreate';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
 
@@ -41,6 +42,7 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute component={Profile} />} />
             <Route path="/profile/edit" element={<ProtectedRoute component={Profile} />} />
             <Route path="/zones" element={<ProtectedRoute component={ParkingZones} />} />
+            <Route path="/tickets/new" element={<ProtectedRoute component={TicketCreate} />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />

@@ -155,6 +155,8 @@ const Dashboard = () => {
         onNavChange={(section) => {
           if (section === 'browse-zones') {
             navigate('/zones');
+          } else if (section === 'report-issue') {
+            navigate('/tickets/new');
           } else {
             setActiveSection(section);
           }
