@@ -33,3 +33,8 @@ build/
 .vscode/
 
 /frontend/node_modules
+
+# Environment variables
+.env
+backend/.env
+**/application-local.properties
