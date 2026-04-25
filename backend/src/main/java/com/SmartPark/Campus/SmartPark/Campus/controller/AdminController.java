@@ -47,4 +47,14 @@ public class AdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PutMapping("/users/{id}/roles")
+    public ResponseEntity<?> updateUserRoles(@PathVariable Long id, @RequestBody List<String> roles) {
+        try {
+            AuthResponse.UserResponse updated = adminService.updateUserRoles(id, roles);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

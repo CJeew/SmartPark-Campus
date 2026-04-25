@@ -33,10 +33,11 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedRolesAndAdmin() {
-        Role adminRole = roleRepository.findByName(Role.RoleType.ADMIN)
-                .orElseGet(() -> roleRepository.save(new Role(Role.RoleType.ADMIN)));
-        roleRepository.findByName(Role.RoleType.USER)
-                .orElseGet(() -> roleRepository.save(new Role(Role.RoleType.USER)));
+        for (Role.RoleType type : Role.RoleType.values()) {
+            roleRepository.findByName(type)
+                    .orElseGet(() -> roleRepository.save(new Role(type)));
+        }
+        Role adminRole = roleRepository.findByName(Role.RoleType.ADMIN).orElseThrow();
 
         if (!userRepository.existsByEmail("admin@smartpark.com")) {
             User admin = new User("admin@smartpark.com", "System Admin", "ADMIN001",

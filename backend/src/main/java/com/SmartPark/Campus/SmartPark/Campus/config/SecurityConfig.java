@@ -50,6 +50,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/auth/**").permitAll()
                 .requestMatchers("/").permitAll()
+                .requestMatchers("/api/admin/users/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/stats").hasAnyRole("ADMIN", "TECHNICIAN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/parking-zones/**").authenticated()
                 .requestMatchers("/api/v1/parking-zones/**").hasRole("ADMIN")

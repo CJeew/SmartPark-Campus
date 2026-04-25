@@ -29,9 +29,18 @@ const Login = () => {
       if (response.success) {
         const user = response.user;
         const hasAdminRole = user.roles && user.roles.includes('ADMIN');
+        const hasTechnicianRole = user.roles && user.roles.includes('TECHNICIAN');
+        
+        // If user is staff/admin, sync tokens for the admin portal
+        if (hasAdminRole || hasTechnicianRole) {
+          localStorage.setItem('adminToken', response.token);
+          localStorage.setItem('adminUser', JSON.stringify(user));
+        }
         
         if (hasAdminRole) {
           navigate('/admin/dashboard');
+        } else if (hasTechnicianRole) {
+          navigate('/admin/technician');
         } else {
           navigate('/dashboard');
         }
@@ -137,6 +146,13 @@ const Login = () => {
                 className="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 text-blue-600 font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
               >
                 Create an Account
+              </button>
+
+              <button
+                onClick={() => navigate('/admin/login')}
+                className="w-full py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
+              >
+                Login as Admin
               </button>
             </div>
 

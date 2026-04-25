@@ -77,11 +77,22 @@ const AdminSidebar = ({ pendingBookings = 0 }) => {
   const admin = adminService.getAdmin();
 
   const handleLogout = () => {
+    const isTechnicianUser = admin?.roles?.includes('TECHNICIAN') && !admin?.roles?.includes('ADMIN');
     adminService.logout();
-    navigate('/admin/login');
+    
+    if (isTechnicianUser) {
+      // Also clear regular user tokens since Technicians log in via the User Portal
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login');
+    } else {
+      navigate('/admin/login');
+    }
   };
 
   const isActive = (path) => location.pathname === path;
+  const isTechnician = admin?.roles?.includes('TECHNICIAN') && !admin?.roles?.includes('ADMIN');
+  const dashboardPath = isTechnician ? '/admin/technician' : '/admin/dashboard';
 
   return (
     <aside className="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0">
@@ -99,28 +110,34 @@ const AdminSidebar = ({ pendingBookings = 0 }) => {
         <NavItem
           icon={Icons.dashboard}
           label="Dashboard"
-          active={isActive('/admin/dashboard')}
-          onClick={() => navigate('/admin/dashboard')}
+          active={isActive('/admin/dashboard') || isActive('/admin/technician')}
+          onClick={() => navigate(dashboardPath)}
         />
-        <NavItem
-          icon={Icons.users}
-          label="Users"
-          active={isActive('/admin/users')}
-          onClick={() => navigate('/admin/users')}
-        />
-        <NavItem
-          icon={Icons.bookings}
-          label="Bookings"
-          active={isActive('/admin/bookings')}
-          onClick={() => navigate('/admin/bookings')}
-          badge={pendingBookings}
-        />
-        <NavItem
-          icon={Icons.zones}
-          label="Parking Zones"
-          active={isActive('/admin/zones')}
-          onClick={() => navigate('/admin/zones')}
-        />
+        {admin?.roles?.includes('ADMIN') && (
+          <NavItem
+            icon={Icons.users}
+            label="Users"
+            active={isActive('/admin/users')}
+            onClick={() => navigate('/admin/users')}
+          />
+        )}
+        {admin?.roles?.includes('ADMIN') && (
+          <NavItem
+            icon={Icons.bookings}
+            label="Bookings"
+            active={isActive('/admin/bookings')}
+            onClick={() => navigate('/admin/bookings')}
+            badge={pendingBookings}
+          />
+        )}
+        {admin?.roles?.includes('ADMIN') && (
+          <NavItem
+            icon={Icons.zones}
+            label="Parking Zones"
+            active={isActive('/admin/zones')}
+            onClick={() => navigate('/admin/zones')}
+          />
+        )}
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-700/60">
