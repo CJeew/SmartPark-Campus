@@ -45,5 +45,45 @@ export const ticketService = {
     }
     
     return await response.json();
-  }
+  },
+
+  getMyTickets: async (limit = 50) => {
+    const response = await fetch(`${API_URL}/my?limit=${limit}`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      let errorMsg = 'Failed to fetch tickets';
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || JSON.stringify(errorData);
+      } catch (e) {
+        errorMsg = await response.text();
+      }
+      throw new Error(errorMsg);
+    }
+
+    return await response.json();
+  },
+
+  getTicketById: async (ticketId) => {
+    const response = await fetch(`${API_URL}/${ticketId}`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      let errorMsg = 'Failed to fetch ticket';
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || JSON.stringify(errorData);
+      } catch (e) {
+        errorMsg = await response.text();
+      }
+      throw new Error(errorMsg);
+    }
+
+    return await response.json();
+  },
 };

@@ -101,11 +101,51 @@ public class TicketService {
                 .getContent();
     }
 
+    @Transactional(readOnly = true)
+    public TicketResponse getTicketById(Long userId, Long ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+        // Only the reporter can view their own ticket
+        if (ticket.getReporter() == null || !ticket.getReporter().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Ticket not found");
+        }
+        return toDetailResponse(ticket);
+    }
+
     private TicketResponse toResponse(Ticket ticket) {
         List<TicketAttachmentResponse> attachments = ticket.getAttachments() == null
                 ? List.of()
                 : ticket.getAttachments().stream()
                 .map(a -> new TicketAttachmentResponse(a.getId(), a.getFileName(), a.getContentType(), a.getSize()))
+                .collect(Collectors.toList());
+
+        return new TicketResponse(
+                ticket.getId(),
+                ticket.getTicketId(),
+                ticket.getTitle(),
+                ticket.getCategory(),
+                ticket.getPriority(),
+                ticket.getStatus(),
+                ticket.getLocation(),
+                ticket.getResourceType(),
+                ticket.getResourceId(),
+                ticket.getDescription(),
+                ticket.getPreferredContactMethod(),
+                ticket.getPreferredContactName(),
+                ticket.getPreferredContactEmail(),
+                ticket.getPreferredContactPhone(),
+                attachments,
+                ticket.getCreatedAt()
+        );
+    }
+
+    /** Detail response: includes base64 image data for each attachment. */
+    private TicketResponse toDetailResponse(Ticket ticket) {
+        List<TicketAttachmentResponse> attachments = ticket.getAttachments() == null
+                ? List.of()
+                : ticket.getAttachments().stream()
+                .map(a -> new TicketAttachmentResponse(
+                        a.getId(), a.getFileName(), a.getContentType(), a.getSize(), a.getData()))
                 .collect(Collectors.toList());
 
         return new TicketResponse(

@@ -6,6 +6,7 @@ import UserSidebar from '../components/UserSidebar';
 import StatusBadge from '../components/StatusBadge';
 import { dashboardService } from '../services/dashboardService';
 import { bookingService } from '../services/bookingService';
+import { ticketService } from '../services/ticketService';
 
 const RefreshIcon = () => (
   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
@@ -44,6 +45,14 @@ const Dashboard = () => {
   const [bookingStatusFilter, setBookingStatusFilter] = useState('ALL');
   const [cancelModal, setCancelModal] = useState({ open: false, booking: null });
   const [cancelLoading, setCancelLoading] = useState(false);
+
+  const [myTickets, setMyTickets] = useState([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [ticketsError, setTicketsError] = useState(null);
+  const [ticketStatusFilter, setTicketStatusFilter] = useState('ALL');
+  const [ticketDetail, setTicketDetail] = useState(null);       // full ticket object
+  const [ticketDetailLoading, setTicketDetailLoading] = useState(false);
+  const [lightboxImg, setLightboxImg] = useState(null);          // image data URL for lightbox
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -91,6 +100,25 @@ const Dashboard = () => {
       fetchUserBookings();
     }
   }, [activeSection, fetchUserBookings]);
+
+  const fetchMyTickets = useCallback(async () => {
+    setTicketsLoading(true);
+    setTicketsError(null);
+    try {
+      const data = await ticketService.getMyTickets(50);
+      setMyTickets(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setTicketsError('Failed to load tickets.');
+    } finally {
+      setTicketsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSection === 'my-tickets') {
+      fetchMyTickets();
+    }
+  }, [activeSection, fetchMyTickets]);
 
   const handleCancelBooking = async () => {
     if (!cancelModal.booking) return;
@@ -806,64 +834,201 @@ const Dashboard = () => {
           {/* ── MY TICKETS ── */}
           {activeSection === 'my-tickets' && (
             <div className="space-y-5">
-              {loading ? (
-                <LoadingSkeleton type="list" count={3} />
-              ) : recentTickets.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {recentTickets.map(ticket => (
-                      <div
-                        key={ticket.id}
-                        className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
-                        onClick={() => navigate(`/tickets/${ticket.id}`)}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <h4 className="font-semibold text-gray-800 flex-1 text-sm leading-snug">{ticket.title}</h4>
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ml-2 ${
-                            ticket.priority === 'CRITICAL' ? 'bg-red-100 text-red-700' :
-                            ticket.priority === 'HIGH'     ? 'bg-orange-100 text-orange-700' :
-                            ticket.priority === 'MEDIUM'   ? 'bg-yellow-100 text-yellow-700' :
-                                                             'bg-green-100 text-green-700'
-                          }`}>
-                            {ticket.priority}
-                          </span>
+
+              {/* Summary chips */}
+              {!ticketsLoading && myTickets.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { label: 'Total',       count: myTickets.length,                                                    color: 'bg-gray-100 text-gray-700' },
+                    { label: 'Open',        count: myTickets.filter(t => t.status === 'OPEN').length,        color: 'bg-blue-100 text-blue-700' },
+                    { label: 'In Progress', count: myTickets.filter(t => t.status === 'IN_PROGRESS').length, color: 'bg-yellow-100 text-yellow-700' },
+                    { label: 'Resolved',    count: myTickets.filter(t => t.status === 'RESOLVED').length,    color: 'bg-green-100 text-green-700' },
+                    { label: 'Closed',      count: myTickets.filter(t => t.status === 'CLOSED').length,      color: 'bg-gray-100 text-gray-500' },
+                  ].map(({ label, count, color }) => (
+                    <span key={label} className={`px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
+                      {label}: {count}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {ticketsError && (
+                <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 text-sm text-red-700">
+                  {ticketsError}
+                </div>
+              )}
+
+              {/* Main panel */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                {/* Panel header */}
+                <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-800">My Tickets</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {ticketsLoading ? 'Loading…' : (() => {
+                        const filtered = ticketStatusFilter === 'ALL' ? myTickets : myTickets.filter(t => t.status === ticketStatusFilter);
+                        return `${filtered.length} of ${myTickets.length} ticket${myTickets.length !== 1 ? 's' : ''}`;
+                      })()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Status filter tabs */}
+                    <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                      {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'].map(s => (
+                        <button
+                          key={s}
+                          onClick={() => setTicketStatusFilter(s)}
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                            ticketStatusFilter === s
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-gray-500 hover:text-gray-700 hover:bg-white'
+                          }`}
+                        >
+                          {s === 'ALL' ? 'All' : s === 'IN_PROGRESS' ? 'In Progress' : s.charAt(0) + s.slice(1).toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={fetchMyTickets}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <RefreshIcon />
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                {ticketsLoading ? (
+                  <div className="p-6 space-y-3">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <div className="animate-pulse bg-gray-200 rounded-full w-9 h-9 flex-shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="animate-pulse bg-gray-200 rounded h-3.5 w-48" />
+                          <div className="animate-pulse bg-gray-200 rounded h-3 w-64" />
                         </div>
-                        <p className="text-gray-400 text-xs mb-3">{ticket.location}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-400">{ticket.category}</span>
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            ticket.status === 'OPEN'        ? 'bg-blue-100 text-blue-700' :
-                            ticket.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-700' :
-                                                              'bg-green-100 text-green-700'
-                          }`}>{ticket.status}</span>
-                        </div>
+                        <div className="animate-pulse bg-gray-200 rounded-full h-6 w-20" />
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => navigate('/my-tickets')}
-                      className="px-4 py-1.5 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
-                    >
-                      View All Tickets →
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center max-w-lg">
-                  <div className="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h10a2 2 0 012 2v3H5V5zm0 8a2 2 0 012-2h10a2 2 0 012 2v3H5v-3z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">No Tickets Submitted</h3>
-                  <p className="text-gray-500 text-sm mb-5">You haven't submitted any issue reports yet.</p>
+                ) : (() => {
+                  const filtered = ticketStatusFilter === 'ALL'
+                    ? myTickets
+                    : myTickets.filter(t => t.status === ticketStatusFilter);
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="px-6 py-14 text-center">
+                        <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                              d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h10a2 2 0 012 2v3H5V5zm0 8a2 2 0 012-2h10a2 2 0 012 2v3H5v-3z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-base font-semibold text-gray-800 mb-1">
+                          {ticketStatusFilter === 'ALL' ? 'No Tickets Yet' : `No ${ticketStatusFilter === 'IN_PROGRESS' ? 'In Progress' : ticketStatusFilter.charAt(0) + ticketStatusFilter.slice(1).toLowerCase()} Tickets`}
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-5">
+                          {ticketStatusFilter === 'ALL'
+                            ? "You haven't submitted any issue reports yet."
+                            : `No tickets with status "${ticketStatusFilter.toLowerCase()}".`}
+                        </p>
+                        {ticketStatusFilter === 'ALL' && (
+                          <button
+                            onClick={() => navigate('/tickets/new')}
+                            className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
+                          >
+                            Report an Issue
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="divide-y divide-gray-50">
+                      {filtered.map((ticket) => {
+                        const priorityConfig = {
+                          CRITICAL: { dot: 'bg-red-500',    badge: 'bg-red-100 text-red-700',       label: 'Critical' },
+                          HIGH:     { dot: 'bg-orange-500', badge: 'bg-orange-100 text-orange-700',  label: 'High' },
+                          MEDIUM:   { dot: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-700',  label: 'Medium' },
+                          LOW:      { dot: 'bg-green-500',  badge: 'bg-green-100 text-green-700',    label: 'Low' },
+                        };
+                        const statusConfig = {
+                          OPEN:        { badge: 'bg-blue-100 text-blue-700',    label: 'Open' },
+                          IN_PROGRESS: { badge: 'bg-yellow-100 text-yellow-700', label: 'In Progress' },
+                          RESOLVED:    { badge: 'bg-green-100 text-green-700',   label: 'Resolved' },
+                          CLOSED:      { badge: 'bg-gray-100 text-gray-500',     label: 'Closed' },
+                        };
+                        const pc = priorityConfig[ticket.priority] || priorityConfig.LOW;
+                        const sc = statusConfig[ticket.status]   || statusConfig.OPEN;
+
+                        return (
+                          <div
+                            key={ticket.id}
+                            className="px-6 py-4 flex items-center gap-4 hover:bg-gray-50/60 transition-colors cursor-pointer"
+                            onClick={async () => {
+                              setTicketDetailLoading(true);
+                              setTicketDetail(null);
+                              try {
+                                const full = await ticketService.getTicketById(ticket.id);
+                                setTicketDetail(full);
+                              } catch (e) {
+                                setTicketsError('Failed to load ticket details.');
+                              } finally {
+                                setTicketDetailLoading(false);
+                              }
+                            }}
+                          >
+                            {/* Priority dot */}
+                            <div className="flex-shrink-0 flex flex-col items-center gap-1">
+                              <span className={`w-2.5 h-2.5 rounded-full ${pc.dot}`} />
+                            </div>
+
+                            {/* Main info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-semibold text-gray-800 truncate">{ticket.title}</p>
+                                {ticket.ticketId && (
+                                  <span className="text-xs text-gray-400 font-mono flex-shrink-0">{ticket.ticketId}</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-400 mt-0.5 truncate">
+                                {[ticket.category, ticket.location].filter(Boolean).join(' · ')}
+                              </p>
+                              {ticket.createdAt && (
+                                <p className="text-xs text-gray-300 mt-0.5">
+                                  {new Date(ticket.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Badges */}
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${pc.badge}`}>
+                                {pc.label}
+                              </span>
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sc.badge}`}>
+                                {sc.label}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* New ticket CTA */}
+              {!ticketsLoading && (
+                <div className="flex justify-end">
                   <button
-                    onClick={() => setActiveSection('report-issue')}
+                    onClick={() => navigate('/tickets/new')}
                     className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
                   >
-                    Report an Issue
+                    + Report New Issue
                   </button>
                 </div>
               )}
@@ -872,7 +1037,203 @@ const Dashboard = () => {
         </div>
       </main>
 
-      {/* Cancel confirmation modal */}
+      {/* ── TICKET DETAIL MODAL ── */}
+      {(ticketDetail || ticketDetailLoading) && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8 px-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => { setTicketDetail(null); setLightboxImg(null); }}
+          />
+
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-auto my-auto">
+            {ticketDetailLoading ? (
+              <div className="p-10 flex flex-col items-center gap-3">
+                <svg className="animate-spin w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <p className="text-gray-400 text-sm">Loading ticket details…</p>
+              </div>
+            ) : ticketDetail && (() => {
+              const t = ticketDetail;
+              const priorityColors = {
+                CRITICAL: 'bg-red-100 text-red-700',
+                HIGH:     'bg-orange-100 text-orange-700',
+                MEDIUM:   'bg-yellow-100 text-yellow-700',
+                LOW:      'bg-green-100 text-green-700',
+              };
+              const statusColors = {
+                OPEN:        'bg-blue-100 text-blue-700',
+                IN_PROGRESS: 'bg-yellow-100 text-yellow-700',
+                RESOLVED:    'bg-green-100 text-green-700',
+                CLOSED:      'bg-gray-100 text-gray-500',
+              };
+              const hasImages = t.attachments && t.attachments.length > 0;
+
+              return (
+                <>
+                  {/* Modal header */}
+                  <div className="flex items-start justify-between px-6 py-5 border-b border-gray-100">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        {t.ticketId && (
+                          <span className="text-xs font-mono text-gray-400">{t.ticketId}</span>
+                        )}
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${priorityColors[t.priority] || 'bg-gray-100 text-gray-600'}`}>
+                          {t.priority}
+                        </span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColors[t.status] || 'bg-gray-100 text-gray-600'}`}>
+                          {t.status === 'IN_PROGRESS' ? 'In Progress' : t.status?.charAt(0) + t.status?.slice(1).toLowerCase()}
+                        </span>
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-800 leading-snug">{t.title}</h2>
+                    </div>
+                    <button
+                      onClick={() => { setTicketDetail(null); setLightboxImg(null); }}
+                      className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Modal body */}
+                  <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+
+                    {/* Meta grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { label: 'Category',  value: t.category },
+                        { label: 'Location',  value: t.location },
+                        { label: 'Resource Type', value: t.resourceType || '—' },
+                        { label: 'Resource ID',   value: t.resourceId   || '—' },
+                        { label: 'Submitted', value: t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—' },
+                        { label: 'Contact',   value: t.preferredContactMethod || '—' },
+                      ].map(({ label, value }) => (
+                        <div key={label}>
+                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
+                          <p className="text-sm text-gray-700 mt-0.5">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Description</p>
+                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{t.description}</p>
+                    </div>
+
+                    {/* Contact details */}
+                    {(t.preferredContactName || t.preferredContactEmail || t.preferredContactPhone) && (
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Contact Details</p>
+                        <div className="space-y-1">
+                          {t.preferredContactName  && <p className="text-sm text-gray-700">{t.preferredContactName}</p>}
+                          {t.preferredContactEmail && <p className="text-sm text-blue-600">{t.preferredContactEmail}</p>}
+                          {t.preferredContactPhone && <p className="text-sm text-gray-700">{t.preferredContactPhone}</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Image attachments */}
+                    {hasImages && (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                          Attachments ({t.attachments.length})
+                        </p>
+                        <div className="grid grid-cols-3 gap-3">
+                          {t.attachments.map((att) => {
+                            const src = att.imageDataUrl
+                              || (att.imageData ? `data:${att.contentType || 'image/jpeg'};base64,${att.imageData}` : null);
+                            return (
+                              <div
+                                key={att.id}
+                                className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-square cursor-pointer shadow-sm hover:shadow-md transition-shadow"
+                                onClick={() => src && setLightboxImg(src)}
+                              >
+                                {src ? (
+                                  <>
+                                    <img
+                                      src={src}
+                                      alt={att.fileName}
+                                      className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                                      </svg>
+                                    </div>
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <p className="text-white text-xs truncate">{att.fileName}</p>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 p-2">
+                                    <svg className="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p className="text-xs text-center truncate w-full">{att.fileName}</p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {!hasImages && (
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        No attachments on this ticket.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Modal footer */}
+                  <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
+                    <button
+                      onClick={() => { setTicketDetail(null); setLightboxImg(null); }}
+                      className="px-5 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ── LIGHTBOX ── */}
+      {lightboxImg && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90"
+          onClick={() => setLightboxImg(null)}
+        >
+          <button
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            onClick={() => setLightboxImg(null)}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <img
+            src={lightboxImg}
+            alt="Attachment"
+            className="max-w-[90vw] max-h-[90vh] rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      {/* Cancel booking confirmation modal */}
       {cancelModal.open && cancelModal.booking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => !cancelLoading && setCancelModal({ open: false, booking: null })} />

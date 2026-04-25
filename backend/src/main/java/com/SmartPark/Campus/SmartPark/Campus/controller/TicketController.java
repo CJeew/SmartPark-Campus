@@ -46,4 +46,14 @@ public class TicketController {
         Long resolvedUserId = requestAuthUtil.resolveUserId(authorization, userId);
         return ResponseEntity.ok(ticketService.getMyTickets(resolvedUserId, limit));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TicketResponse> getTicketById(
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @PathVariable Long id
+    ) {
+        Long resolvedUserId = requestAuthUtil.resolveUserId(authorization, userId);
+        return ResponseEntity.ok(ticketService.getTicketById(resolvedUserId, id));
+    }
 }
