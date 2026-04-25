@@ -60,6 +60,61 @@ const ConfirmModal = ({ user, onConfirm, onCancel, loading }) => {
   );
 };
 
+// ─── Edit Roles modal ─────────────────────────────────────────────────────────
+const EditRolesModal = ({ user, onConfirm, onCancel, loading }) => {
+  const [selectedRoles, setSelectedRoles] = useState(user?.roles || []);
+  const availableRoles = ['USER', 'WARDEN', 'TECHNICIAN', 'ADMIN'];
+
+  const toggleRole = (role) => {
+    setSelectedRoles(prev => 
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+        <h3 className="text-center text-lg font-semibold text-gray-800 mb-4">
+          Edit Roles for {user?.fullName}
+        </h3>
+        <div className="space-y-3 mb-6">
+          {availableRoles.map(role => (
+            <label key={role} className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+              <input 
+                type="checkbox"
+                checked={selectedRoles.includes(role)}
+                onChange={() => toggleRole(role)}
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              />
+              <span className={`text-sm font-medium ${
+                role === 'ADMIN' ? 'text-red-700' :
+                role === 'WARDEN' ? 'text-orange-700' :
+                role === 'TECHNICIAN' ? 'text-cyan-700' : 'text-gray-700'
+              }`}>{role}</span>
+            </label>
+          ))}
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(selectedRoles)}
+            disabled={loading || selectedRoles.length === 0}
+            className="flex-1 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Saving…' : 'Save Roles'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Nav item (shared style) ──────────────────────────────────────────────────
 const NavItem = ({ icon, label, active, onClick, badge }) => (
   <button
@@ -100,9 +155,11 @@ const AdminUsers = () => {
   const [typeFilter,    setTypeFilter]    = useState('all');
   const [statusFilter,  setStatusFilter]  = useState('all');
   const [confirmUser,   setConfirmUser]   = useState(null);
+  const [editingRolesUser, setEditingRolesUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast,         setToast]         = useState(null);
   const [stats,         setStats]         = useState(null);
+  const currentAdmin = adminService.getAdmin();
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -140,6 +197,21 @@ const AdminUsers = () => {
       setConfirmUser(null);
     } catch (e) {
       showToast(e.message || 'Failed to update user', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateRoles = async (roles) => {
+    if (!editingRolesUser) return;
+    setActionLoading(true);
+    try {
+      const updated = await adminService.updateUserRoles(editingRolesUser.id, roles);
+      setUsers((prev) => prev.map((u) => u.id === updated.id ? updated : u));
+      showToast(`Roles updated for ${updated.fullName}`);
+      setEditingRolesUser(null);
+    } catch (e) {
+      showToast(e.message || 'Failed to update roles', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -346,6 +418,7 @@ const AdminUsers = () => {
                                 <span key={role} className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                                   role === 'ADMIN'   ? 'bg-red-50 text-red-700' :
                                   role === 'WARDEN'  ? 'bg-orange-50 text-orange-700' :
+                                  role === 'TECHNICIAN' ? 'bg-cyan-50 text-cyan-700' :
                                                        'bg-gray-100 text-gray-600'
                                 }`}>
                                   {role}
@@ -368,20 +441,30 @@ const AdminUsers = () => {
 
                           {/* Action */}
                           <td className="px-6 py-3.5 text-right">
-                            {user.roles?.includes('ADMIN') ? (
-                              <span className="text-xs text-gray-300 italic">Protected</span>
-                            ) : (
-                              <button
-                                onClick={() => setConfirmUser(user)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                  active
-                                    ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-100'
-                                    : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-100'
-                                }`}
-                              >
-                                {active ? 'Deactivate' : 'Activate'}
-                              </button>
-                            )}
+                            <div className="flex items-center justify-end gap-2">
+                              {user.roles?.includes('ADMIN') && !currentAdmin?.roles?.includes('ADMIN') ? (
+                                <span className="text-xs text-gray-300 italic">Protected</span>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => setEditingRolesUser(user)}
+                                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100 transition-colors"
+                                  >
+                                    Roles
+                                  </button>
+                                  <button
+                                    onClick={() => setConfirmUser(user)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                      active
+                                        ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-100'
+                                        : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-100'
+                                    }`}
+                                  >
+                                    {active ? 'Deactivate' : 'Activate'}
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -402,6 +485,16 @@ const AdminUsers = () => {
           loading={actionLoading}
           onConfirm={handleToggle}
           onCancel={() => !actionLoading && setConfirmUser(null)}
+        />
+      )}
+
+      {/* ── Edit Roles modal ── */}
+      {editingRolesUser && (
+        <EditRolesModal
+          user={editingRolesUser}
+          loading={actionLoading}
+          onConfirm={handleUpdateRoles}
+          onCancel={() => !actionLoading && setEditingRolesUser(null)}
         />
       )}
 

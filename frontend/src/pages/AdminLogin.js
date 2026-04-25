@@ -19,7 +19,11 @@ const AdminLogin = () => {
       if (response.success) {
         localStorage.setItem('adminToken', response.token);
         localStorage.setItem('adminUser', JSON.stringify(response.user));
-        navigate('/admin/dashboard');
+        if (response.user.roles.includes('TECHNICIAN') && !response.user.roles.includes('ADMIN')) {
+          navigate('/admin/technician');
+        } else {
+          navigate('/admin/dashboard');
+        }
       } else {
         setError(response.message || 'Login failed');
       }

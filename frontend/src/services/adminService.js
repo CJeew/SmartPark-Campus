@@ -61,6 +61,19 @@ export const adminService = {
     return response.json();
   },
 
+  updateUserRoles: async (userId, roles) => {
+    const response = await fetch(`${API_URL}/admin/users/${userId}/roles`, {
+      method: 'PUT',
+      headers: authHeader(),
+      body: JSON.stringify(roles),
+    });
+    if (!response.ok) {
+      const msg = await response.text();
+      throw new Error(msg || 'Failed to update user roles');
+    }
+    return response.json();
+  },
+
   updateBookingStatus: async (bookingId, status, reason) => {
     const response = await fetch(`${API_URL}/admin/bookings/${bookingId}/status`, {
       method: 'PUT',
