@@ -24,6 +24,8 @@ public class SchemaCompatibilityInitializer implements ApplicationRunner {
             ensureTypeColumn();
             ensureStatusColumn();
             ensureCapacityColumns();
+            ensureTicketSchema();
+            ensureTicketAttachmentSchema();
         } catch (Exception ex) {
             // Keep startup alive even when database user has limited DDL permissions.
             log.warn("Schema compatibility update skipped: {}", ex.getMessage());
@@ -85,6 +87,42 @@ public class SchemaCompatibilityInitializer implements ApplicationRunner {
 
         jdbcTemplate.execute("UPDATE parking_zones SET status = 'ACTIVE' WHERE status IS NULL");
         log.info("Added missing parking_zones.status column for schema compatibility");
+    }
+
+    /**
+     * Fixes tickets table: the entity previously used reporter_user_id (wrong name).
+     * Hibernate created that column; created_by_user_id is the real FK column.
+     * Make reporter_user_id nullable so inserts don't fail on it.
+     */
+    private void ensureTicketSchema() {
+        try {
+            if (columnExists("tickets", "reporter_user_id")) {
+                jdbcTemplate.execute(
+                    "ALTER TABLE tickets ALTER COLUMN reporter_user_id DROP NOT NULL");
+                log.info("tickets.reporter_user_id set to nullable (stale Hibernate column)");
+            }
+        } catch (Exception ex) {
+            log.warn("Could not update tickets.reporter_user_id: {}", ex.getMessage());
+        }
+    }
+
+    /**
+     * Fixes ticket_attachments table: the entity previously used column name 'data'.
+     * Hibernate created that column with NOT NULL. Now the entity writes to 'data_bytes'
+     * (the correct column). Drop NOT NULL from the stale 'data' column so inserts succeed.
+     */
+    private void ensureTicketAttachmentSchema() {
+        try {
+            if (columnExists("ticket_attachments", "data")) {
+                jdbcTemplate.execute(
+                    "ALTER TABLE ticket_attachments ALTER COLUMN data DROP NOT NULL");
+                jdbcTemplate.execute(
+                    "ALTER TABLE ticket_attachments ALTER COLUMN data SET DEFAULT NULL");
+                log.info("ticket_attachments.data NOT NULL removed (stale Hibernate column)");
+            }
+        } catch (Exception ex) {
+            log.warn("Could not update ticket_attachments.data: {}", ex.getMessage());
+        }
     }
 
     private boolean columnExists(String tableName, String columnName) {

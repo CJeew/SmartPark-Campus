@@ -1,0 +1,49 @@
+const API_URL = 'http://localhost:8080/api/v1/tickets';
+
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  };
+};
+
+export const ticketService = {
+  createTicket: async (ticketData, images) => {
+    const formData = new FormData();
+    
+    Object.keys(ticketData).forEach(key => {
+      if (ticketData[key] !== undefined && ticketData[key] !== null && ticketData[key] !== '') {
+        formData.append(key, ticketData[key]);
+      }
+    });
+    
+    // Append images (up to 3 as requested, Multer/MultipartFile equivalent)
+    if (images && images.length > 0) {
+      const maxImages = Math.min(images.length, 3);
+      for (let i = 0; i < maxImages; i++) {
+        formData.append('images', images[i]);
+      }
+    }
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: getAuthHeader(), // Browser sets multipart/form-data with boundary
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMsg = 'Failed to create ticket';
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || JSON.stringify(errorData);
+      } catch (e) {
+        errorMsg = await response.text();
+      }
+      console.error('Backend Error Response:', errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    return await response.json();
+  }
+};
