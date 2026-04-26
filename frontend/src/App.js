@@ -12,6 +12,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
 import TechnicianDashboard from './pages/TechnicianDashboard';
+import AdminHelmetRack from './pages/AdminHelmetRack';
 import ZoneManagement from './pages/admin/ZoneManagement';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
@@ -43,6 +44,7 @@ function App() {
             <Route path="/profile/edit" element={<ProtectedRoute component={Profile} />} />
             <Route path="/zones" element={<ProtectedRoute component={ParkingZones} />} />
             <Route path="/notifications" element={<ProtectedRoute component={Notifications} />} />
+            <Route path="/helmet-rack" element={<ProtectedRoute component={AdminHelmetRack} />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
