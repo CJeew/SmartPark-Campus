@@ -4,6 +4,7 @@ import com.SmartPark.Campus.SmartPark.Campus.dto.BookingRequest;
 import com.SmartPark.Campus.SmartPark.Campus.dto.BookingResponse;
 import com.SmartPark.Campus.SmartPark.Campus.dto.BookingStatusRequest;
 import com.SmartPark.Campus.SmartPark.Campus.entity.Booking;
+import com.SmartPark.Campus.SmartPark.Campus.entity.NotificationType;
 import com.SmartPark.Campus.SmartPark.Campus.entity.ParkingSlot;
 import com.SmartPark.Campus.SmartPark.Campus.entity.User;
 import com.SmartPark.Campus.SmartPark.Campus.repository.BookingRepository;
@@ -32,6 +33,9 @@ public class BookingService {
     
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public List<BookingResponse> getBookings(String statusStr, String zone, String dateRange) {
         String status = null;
@@ -103,8 +107,18 @@ public class BookingService {
         // Create booking
         Booking booking = new Booking(user, slot, request.getStartTime(), request.getEndTime());
         booking.setStatus(Booking.BookingStatus.PENDING);
-        
-        return toResponse(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        // Notify user that their booking request was submitted
+        String slotLabel = slot.getSlotNumber() + " (" + slot.getZone().getName() + ")";
+        notificationService.createNotification(
+                userId,
+                "Booking Submitted",
+                "Your booking request for Slot " + slotLabel + " has been submitted and is pending approval.",
+                NotificationType.BOOKING_APPROVED
+        );
+
+        return toResponse(saved);
     }
 
     public List<BookingResponse> getUserBookings(Long userId) {
@@ -133,8 +147,18 @@ public class BookingService {
 
         booking.setStatus(Booking.BookingStatus.CANCELLED);
         booking.getSlot().setIsAvailable(true);
+        Booking saved = bookingRepository.save(booking);
 
-        return toResponse(bookingRepository.save(booking));
+        // Notify user
+        String slotLabel = booking.getSlot().getSlotNumber() + " (" + booking.getSlot().getZone().getName() + ")";
+        notificationService.createNotification(
+                userId,
+                "Booking Cancelled",
+                "Your booking for Slot " + slotLabel + " has been cancelled.",
+                NotificationType.BOOKING_CANCELLED
+        );
+
+        return toResponse(saved);
     }
 
     public List<BookingResponse> getUserBookingsByStatus(Long userId, String status) {
@@ -169,7 +193,37 @@ public class BookingService {
             booking.getSlot().setIsAvailable(true);
         }
 
-        return toResponse(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        // Fire notification to booking owner
+        Long ownerId = booking.getUser().getId();
+        String slotLabel = booking.getSlot().getSlotNumber() + " (" + booking.getSlot().getZone().getName() + ")";
+
+        if (newStatus == Booking.BookingStatus.APPROVED) {
+            notificationService.createNotification(
+                    ownerId,
+                    "Booking Approved",
+                    "Your booking for Slot " + slotLabel + " has been approved.",
+                    NotificationType.BOOKING_APPROVED
+            );
+        } else if (newStatus == Booking.BookingStatus.REJECTED) {
+            String reason = request.getReason() != null ? ": " + request.getReason() : ".";
+            notificationService.createNotification(
+                    ownerId,
+                    "Booking Rejected",
+                    "Your booking request for Slot " + slotLabel + " was rejected" + reason,
+                    NotificationType.BOOKING_REJECTED
+            );
+        } else if (newStatus == Booking.BookingStatus.CANCELLED) {
+            notificationService.createNotification(
+                    ownerId,
+                    "Booking Cancelled",
+                    "Your booking for Slot " + slotLabel + " has been cancelled.",
+                    NotificationType.BOOKING_CANCELLED
+            );
+        }
+
+        return toResponse(saved);
     }
 
     private BookingResponse toResponse(Booking b) {

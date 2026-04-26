@@ -45,6 +45,12 @@ const Icons = {
         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     </svg>
   ),
+  notifications: (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+  ),
 };
 
 const NavItem = ({ icon, label, active, onClick, badge }) => (
@@ -66,7 +72,7 @@ const NavItem = ({ icon, label, active, onClick, badge }) => (
   </button>
 );
 
-const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
+const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0, unreadNotifications = 0 }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -77,11 +83,12 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
   };
 
   const navItems = [
-    { key: 'overview',      label: 'Overview',             icon: Icons.overview },
-    { key: 'browse-zones',  label: 'Browse Parking Zones', icon: Icons.browse },
-    { key: 'my-bookings',   label: 'My Bookings',          icon: Icons.bookings },
-    { key: 'report-issue',  label: 'Report an Issue',      icon: Icons.issue },
-    { key: 'my-tickets',    label: 'My Tickets',           icon: Icons.tickets, badge: openTicketsCount },
+    { key: 'overview',       label: 'Overview',             icon: Icons.overview },
+    { key: 'browse-zones',   label: 'Browse Parking Zones', icon: Icons.browse },
+    { key: 'my-bookings',    label: 'My Bookings',          icon: Icons.bookings },
+    { key: 'report-issue',   label: 'Report an Issue',      icon: Icons.issue },
+    { key: 'my-tickets',     label: 'My Tickets',           icon: Icons.tickets, badge: openTicketsCount },
+    { key: 'notifications',  label: 'Notifications',        icon: Icons.notifications, badge: unreadNotifications, isRoute: '/notifications' },
   ];
 
   return (
@@ -105,7 +112,7 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
             icon={item.icon}
             label={item.label}
             active={activeSection === item.key}
-            onClick={() => onNavChange(item.key)}
+            onClick={() => item.isRoute ? navigate(item.isRoute) : onNavChange(item.key)}
             badge={item.badge}
           />
         ))}

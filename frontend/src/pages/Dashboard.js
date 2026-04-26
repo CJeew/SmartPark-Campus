@@ -6,6 +6,7 @@ import UserSidebar from '../components/UserSidebar';
 import StatusBadge from '../components/StatusBadge';
 import { dashboardService } from '../services/dashboardService';
 import { bookingService } from '../services/bookingService';
+import { notificationService } from '../services/notificationService';
 
 const RefreshIcon = () => (
   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
@@ -44,6 +45,7 @@ const Dashboard = () => {
   const [bookingStatusFilter, setBookingStatusFilter] = useState('ALL');
   const [cancelModal, setCancelModal] = useState({ open: false, booking: null });
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -71,6 +73,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    // Fetch unread notification count for sidebar badge (only if logged in)
+    const userId = user?.id;
+    if (userId) {
+      notificationService.getUnreadCount()
+        .then(count => setUnreadCount(count))
+        .catch(() => {});
+    }
   }, [fetchDashboardData]);
 
   const fetchUserBookings = useCallback(async () => {
@@ -132,6 +141,7 @@ const Dashboard = () => {
           }
         }}
         openTicketsCount={openTicketsCount}
+        unreadNotifications={unreadCount}
       />
 
       <main className="flex-1 overflow-auto flex flex-col">

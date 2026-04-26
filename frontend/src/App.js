@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ParkingZones from './pages/ParkingZones';
+import Notifications from './pages/Notifications';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
@@ -40,6 +41,7 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute component={Profile} />} />
             <Route path="/profile/edit" element={<ProtectedRoute component={Profile} />} />
             <Route path="/zones" element={<ProtectedRoute component={ParkingZones} />} />
+            <Route path="/notifications" element={<ProtectedRoute component={Notifications} />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />

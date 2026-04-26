@@ -5,7 +5,6 @@ import UserRoleBadge from '../components/UserRoleBadge';
 import VehicleTypeBadge from '../components/VehicleTypeBadge';
 import InputField from '../components/InputField';
 import FilterDropdown from '../components/FilterDropdown';
-import LoadingSkeleton from '../components/LoadingSkeleton';
 import UserSidebar from '../components/UserSidebar';
 import { profileService } from '../services/profileService';
 import { useToast } from '../context/ToastContext';
