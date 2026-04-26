@@ -248,7 +248,14 @@ const Profile = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <h3 className="text-lg font-bold text-gray-800">{profile.fullName}</h3>
-                  <UserRoleBadge role={profile.role || 'USER'} size="sm" />
+                  <UserRoleBadge 
+                    role={
+                      profile.roles?.includes('ADMIN') ? 'ADMIN' : 
+                      profile.roles?.includes('WARDEN') ? 'WARDEN' : 
+                      profile.roles?.includes('TECHNICIAN') ? 'TECHNICIAN' : 'USER'
+                    } 
+                    size="sm" 
+                  />
                 </div>
                 <p className="text-sm text-gray-500">{profile.email}</p>
                 <div className="flex flex-wrap gap-4 mt-2">

@@ -25,6 +25,9 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.PENDING;
 
+    @Column(name = "purpose")
+    private String purpose;
+
     @Column(name = "reason")
     private String reason;
 
@@ -63,6 +66,8 @@ public class Booking {
     public void setSlot(ParkingSlot slot) { this.slot = slot; }
     public BookingStatus getStatus() { return status; }
     public void setStatus(BookingStatus status) { this.status = status; }
+    public String getPurpose() { return purpose; }
+    public void setPurpose(String purpose) { this.purpose = purpose; }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
     public LocalDateTime getStartTime() { return startTime; }

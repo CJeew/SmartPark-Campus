@@ -96,7 +96,11 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0, unreadN
       {/* Brand */}
       <div className="px-6 py-5 border-b border-gray-700/60">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-sm font-bold">S</div>
+          <img
+            src="/Untitled design (1).png"
+            alt="SmartPark Campus"
+            className="w-9 h-9 object-contain flex-shrink-0"
+          />
           <div>
             <h1 className="text-base font-bold leading-tight">SmartPark</h1>
             <p className="text-gray-400 text-xs">Campus Parking</p>
