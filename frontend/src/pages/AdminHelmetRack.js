@@ -35,6 +35,7 @@ const AdminHelmetRack = () => {
   const [checkInForm, setCheckInForm] = useState({
     studentId: '',
     studentName: '',
+    studentEmail: '',
     helmetTag: '',
   });
   const [checkOutStudentId, setCheckOutStudentId] = useState('');
@@ -83,7 +84,7 @@ const AdminHelmetRack = () => {
   const closeModal = () => {
     setSelectedSlot(null);
     setModalMode(null);
-    setCheckInForm({ studentId: '', studentName: '', helmetTag: '' });
+    setCheckInForm({ studentId: '', studentName: '', studentEmail: '', helmetTag: '' });
     setCheckOutStudentId('');
     setFlagReason('');
     setFormErrors({});
@@ -97,6 +98,7 @@ const AdminHelmetRack = () => {
       setCheckInForm({
         studentId: '',
         studentName: '',
+        studentEmail: '',
         helmetTag: slot.slotCode,
       });
     }
@@ -242,7 +244,11 @@ const AdminHelmetRack = () => {
               value={checkInForm.studentId}
               onChange={(e) => {
                 const value = e.target.value;
-                setCheckInForm({ ...checkInForm, studentId: value });
+                setCheckInForm({ 
+                  ...checkInForm, 
+                  studentId: value,
+                  studentEmail: value ? `${value}@my.sliit.lk` : ''
+                });
                 setFormErrors((prev) => ({ ...prev, studentId: '' }));
               }}
               placeholder="Student ID"
@@ -262,6 +268,15 @@ const AdminHelmetRack = () => {
               className={`w-full border rounded-lg px-3 py-2 ${formErrors.studentName ? 'border-red-500 focus:border-red-500' : 'border-gray-300'}`}
             />
             {formErrors.studentName && <p className="text-xs text-red-600 mt-1">{formErrors.studentName}</p>}
+            </div>
+            <div>
+            <input
+              value={checkInForm.studentEmail}
+              readOnly
+              placeholder="Student Email"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+            />
+            <p className="text-[11px] text-gray-500 mt-1">Auto-filled based on Student ID.</p>
             </div>
             <div>
             <input
