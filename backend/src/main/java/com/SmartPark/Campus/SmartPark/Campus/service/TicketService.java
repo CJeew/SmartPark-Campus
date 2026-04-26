@@ -121,6 +121,18 @@ public class TicketService {
                 .collect(Collectors.toList());
     }
 
+    /** Technician: return all tickets assigned to this technician. */
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getMyAssignedTickets(Long technicianId) {
+        if (!userRepository.existsById(technicianId)) {
+            throw new ResourceNotFoundException("Technician not found");
+        }
+        return ticketRepository.findByAssignedTechnicianIdOrderByCreatedAtDesc(technicianId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     /** Admin: update the status of any ticket. */
     @Transactional
     public TicketResponse updateTicketStatus(Long ticketId, String status) {

@@ -116,4 +116,22 @@ export const ticketService = {
     }
     return await response.json();
   },
+
+  getMyAssignedTickets: async () => {
+    const response = await fetch(`${API_URL}/my-assigned`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+    if (!response.ok) {
+      let errorMsg = 'Failed to fetch assigned tickets';
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || JSON.stringify(errorData);
+      } catch (_) {
+        // body already consumed or not JSON — use generic message
+      }
+      throw new Error(errorMsg);
+    }
+    return await response.json();
+  },
 };

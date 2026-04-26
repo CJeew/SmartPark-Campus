@@ -58,6 +58,15 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getTicketById(resolvedUserId, id));
     }
 
+    @GetMapping("/my-assigned")
+    public ResponseEntity<List<TicketResponse>> getMyAssignedTickets(
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId
+    ) {
+        Long resolvedUserId = requestAuthUtil.resolveUserId(authorization, userId);
+        return ResponseEntity.ok(ticketService.getMyAssignedTickets(resolvedUserId));
+    }
+
     // ── Admin endpoints ────────────────────────────────────────────────────────
 
     @GetMapping("/admin/all")
