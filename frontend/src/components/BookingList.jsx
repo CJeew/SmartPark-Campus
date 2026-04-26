@@ -132,6 +132,13 @@ const BookingList = ({ refreshTrigger }) => {
                   <span className="value">{formatDate(booking.createdAt)}</span>
                 </div>
 
+                {booking.purpose && (
+                  <div className="detail-row">
+                    <span className="label">Purpose:</span>
+                    <span className="value reason">{booking.purpose}</span>
+                  </div>
+                )}
+
                 {booking.reason && (
                   <div className="detail-row">
                     <span className="label">Reason:</span>

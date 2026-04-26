@@ -2,6 +2,7 @@ package com.SmartPark.Campus.SmartPark.Campus.repository;
 
 import com.SmartPark.Campus.SmartPark.Campus.entity.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -30,6 +31,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     long countByStatus(Booking.BookingStatus status);
 
     long countBySlot_Zone_Id(Long zoneId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Booking b WHERE b.slot.zone.id = :zoneId")
+    void deleteBySlotZoneId(@Param("zoneId") Long zoneId);
 
     List<Booking> findByUser_Id(Long userId);
 

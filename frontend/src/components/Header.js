@@ -42,7 +42,11 @@ const Header = () => {
               setIsDropdownOpen(false);
             }}
           >
-            <div className="text-2xl">🚗</div>
+            <img
+              src="/Untitled design (1).png"
+              alt="SmartPark Campus"
+              className="w-10 h-10 object-contain"
+            />
             <div>
               <h1 className="text-lg font-bold text-gray-900">SmartPark</h1>
               <p className="text-xs text-gray-500">Campus Parking Hub</p>

@@ -191,7 +191,8 @@ const Register = () => {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 text-white">
-          <h1 className="text-5xl font-bold mb-4">🚗 SmartPark</h1>
+          <img src="/Untitled design (1).png" alt="SmartPark Campus" className="w-20 h-20 object-contain mx-auto mb-4" />
+          <h1 className="text-5xl font-bold mb-4">SmartPark</h1>
           <h2 className="text-3xl font-bold mb-2">Create Your Account</h2>
           <p className="text-blue-100 text-lg">Join thousands of students managing parking efficiently</p>
         </div>

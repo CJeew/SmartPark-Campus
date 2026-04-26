@@ -64,6 +64,6 @@ public class Role {
     }
 
     public enum RoleType {
-        USER, WARDEN, ADMIN
+        USER, WARDEN, ADMIN, TECHNICIAN
     }
 }

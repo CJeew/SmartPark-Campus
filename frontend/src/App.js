@@ -10,6 +10,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
+import TechnicianDashboard from './pages/TechnicianDashboard';
 import ZoneManagement from './pages/admin/ZoneManagement';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
@@ -44,6 +45,7 @@ function App() {
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/technician" element={<TechnicianDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/bookings" element={<AdminBookings />} />
             <Route path="/admin/zones" element={<ZoneManagement />} />
