@@ -8,6 +8,7 @@ import com.SmartPark.Campus.SmartPark.Campus.entity.ZoneType;
 import com.SmartPark.Campus.SmartPark.Campus.exception.ResourceNotFoundException;
 import com.SmartPark.Campus.SmartPark.Campus.mapper.ParkingZoneMapper;
 import com.SmartPark.Campus.SmartPark.Campus.repository.BookingRepository;
+import com.SmartPark.Campus.SmartPark.Campus.repository.ParkingSlotRepository;
 import com.SmartPark.Campus.SmartPark.Campus.repository.ParkingZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,6 +39,9 @@ public class ParkingZoneServiceImpl implements ParkingZoneService {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private ParkingSlotRepository slotRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -143,13 +147,9 @@ public class ParkingZoneServiceImpl implements ParkingZoneService {
             throw new ResourceNotFoundException("Parking zone not found with id: " + id);
         }
 
-        long linkedBookings = bookingRepository.countBySlot_Zone_Id(id);
-        if (linkedBookings > 0) {
-            throw new IllegalStateException("Cannot delete this zone because it has booking history");
-        }
-
+        bookingRepository.deleteBySlotZoneId(id);
+        slotRepository.deleteByZoneId(id);
         cleanupSupportedTypeLinks(id);
-
         repository.deleteById(id);
     }
 

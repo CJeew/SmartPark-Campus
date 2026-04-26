@@ -169,7 +169,20 @@ const SlotManagementModal = ({ zone, onClose, onChanged }) => {
 
         {/* Footer */}
         <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center">
-          <span className="text-xs text-gray-400">{slots.length} slot{slots.length !== 1 ? 's' : ''}</span>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span>
+              <span className="font-medium text-gray-700">{slots.length}</span> Capacity
+            </span>
+            <span>
+              <span className="font-medium text-gray-700">{slots.filter(s => !s.isAvailable).length}</span>
+              <span className="text-gray-400">/{slots.length}</span> Occupancy
+              {slots.length > 0 && (
+                <span className="ml-1 text-gray-400">
+                  ({Math.round((slots.filter(s => !s.isAvailable).length / slots.length) * 100)}%)
+                </span>
+              )}
+            </span>
+          </div>
           <button onClick={onClose} className="px-4 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-gray-600">
             Close
           </button>
