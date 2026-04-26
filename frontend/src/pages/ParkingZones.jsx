@@ -31,7 +31,7 @@ const ParkingZones = () => {
     try {
       setLoading(true);
       const data = await parkingZoneService.getAll({ page: 0, size: 100 });
-      setZones(data.content || []);
+      setZones((data.content || []).filter(z => z.status !== 'OUT_OF_SERVICE'));
     } catch (error) {
       showToast('Failed to load parking zones', 'error');
     } finally {
