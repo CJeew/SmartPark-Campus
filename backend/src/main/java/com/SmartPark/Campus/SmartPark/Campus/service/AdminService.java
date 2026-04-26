@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.SmartPark.Campus.SmartPark.Campus.repository.RoleRepository;
 
 @Service
 public class AdminService {
@@ -45,9 +46,9 @@ public class AdminService {
 
         User user = userOpt.get();
 
-        boolean isAdmin = user.getRoles().stream()
-                .anyMatch(r -> r.getName() == Role.RoleType.ADMIN);
-        if (!isAdmin) {
+        boolean isAdminOrTech = user.getRoles().stream()
+                .anyMatch(r -> r.getName() == Role.RoleType.ADMIN || r.getName() == Role.RoleType.TECHNICIAN);
+        if (!isAdminOrTech) {
             return new AuthResponse(false, "Access denied", null, null);
         }
 
@@ -90,6 +91,9 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    @Autowired
+    private RoleRepository roleRepository;
+
     public AuthResponse.UserResponse toggleUserStatus(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -101,6 +105,36 @@ public class AdminService {
         }
 
         user.setIsActive(!user.getIsActive());
+        User saved = userRepository.save(user);
+        return toUserResponse(saved);
+    }
+
+    public AuthResponse.UserResponse updateUserRoles(Long userId, List<String> roleNames) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean currentIsAdmin = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean targetIsAdmin = user.getRoles().stream()
+                .anyMatch(r -> r.getName() == Role.RoleType.ADMIN);
+        boolean requestsAdmin = roleNames.contains("ADMIN");
+
+        if ((targetIsAdmin || requestsAdmin) && !currentIsAdmin) {
+            throw new RuntimeException("Only ADMINs can modify ADMIN roles");
+        }
+
+        if (roleNames.isEmpty()) {
+            throw new RuntimeException("User must have at least one role");
+        }
+
+        java.util.Set<Role> newRoles = new java.util.HashSet<>();
+        for (String roleName : roleNames) {
+            Role role = roleRepository.findByName(Role.RoleType.valueOf(roleName))
+                    .orElseGet(() -> roleRepository.save(new Role(Role.RoleType.valueOf(roleName))));
+            newRoles.add(role);
+        }
+        user.setRoles(newRoles);
         User saved = userRepository.save(user);
         return toUserResponse(saved);
     }

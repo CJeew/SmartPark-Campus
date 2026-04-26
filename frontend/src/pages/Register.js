@@ -184,159 +184,216 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 py-8 px-4">
-      {error && <Toast message={error} type="error" onClose={() => setError('')} duration={4000} />}
-      {success && <Toast message={success} type="success" onClose={() => setSuccess('')} duration={4000} />}
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 py-12 px-4">
+      {error && <Toast message={error} type="error" duration={4000} />}
+      {success && <Toast message={success} type="success" duration={4000} />}
 
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-2xl p-8">
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">🚗</h1>
-          <h2 className="text-2xl font-bold text-gray-800 mt-4">SmartPark Registration</h2>
-          <p className="text-gray-600 mt-2">Create your account to access the parking system</p>
+        <div className="text-center mb-12 text-white">
+          <img src="/Untitled design (1).png" alt="SmartPark Campus" className="w-20 h-20 object-contain mx-auto mb-4" />
+          <h1 className="text-5xl font-bold mb-4">SmartPark</h1>
+          <h2 className="text-3xl font-bold mb-2">Create Your Account</h2>
+          <p className="text-blue-100 text-lg">Join thousands of students managing parking efficiently</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Google Sign-In Section */}
-          <div className="bg-blue-50 p-4 rounded-lg mb-6">
-            <p className="text-sm text-gray-700 mb-3 font-medium">Step 1: Sign in with Google</p>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => setError('Google sign-in failed')}
-              theme="outline"
-              size="large"
-            />
-            {formData.googleId && (
-              <p className="text-green-600 text-sm mt-2">✓ Google account linked</p>
-            )}
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          {/* Form Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-6">
+            <h3 className="text-2xl font-bold">Registration Form</h3>
+            <p className="text-blue-100 mt-1">Complete all fields to create your account</p>
           </div>
 
-          {/* Personal Information Section */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-800 mb-4">Personal Information</h3>
+          <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            {/* Step 1: Google Authentication */}
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold text-sm">1</span>
+                <h3 className="text-lg font-semibold text-gray-900">Link Your Google Account</h3>
+              </div>
+              <p className="text-gray-600 mb-4">Sign in with your SLIIT Google account to get started</p>
+              <div className="mx-auto max-w-sm">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google sign-in failed')}
+                  theme="outline"
+                  size="large"
+                />
+              </div>
+              {formData.googleId && (
+                <p className="text-green-600 text-sm mt-4 flex items-center gap-2">
+                  <span>✓</span> Google account linked successfully
+                </p>
+              )}
+            </div>
 
-            <InputField
-              label="Full Name"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              error={errors.fullName}
-              required
-              placeholder="Enter your full name"
-            />
+            {/* Step 2: Personal Information */}
+            <div className="border-2 border-gray-200 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold text-sm">2</span>
+                <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+              </div>
 
-            <InputField
-              label="Email Address"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              error={errors.email}
-              required
-              placeholder="your.email@sliit.lk"
-              disabled={formData.googleId}
-            />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InputField
+                  label="Full Name"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={errors.fullName}
+                  required
+                  placeholder="Enter your full name"
+                />
 
-            <InputField
-              label="University ID / Index Number"
-              name="universityId"
-              value={formData.universityId}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              error={errors.universityId}
-              required
-              placeholder="e.g., IT001234"
-            />
+                <InputField
+                  label="Email Address"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={errors.email}
+                  required
+                  placeholder="your.email@sliit.lk"
+                  disabled={!!formData.googleId}
+                />
 
-            <InputField
-              label="Phone Number"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              error={errors.phoneNumber}
-              required
-              placeholder="0712345678"
-            />
+                <InputField
+                  label="University ID"
+                  name="universityId"
+                  value={formData.universityId}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={errors.universityId}
+                  required
+                  placeholder="e.g., IT001234"
+                />
 
-            <FilterDropdown
-              label="Faculty / Department"
-              options={FACULTIES}
-              value={formData.faculty}
-              onChange={(value) => handleSelectChange('faculty', value)}
-              error={errors.faculty}
-              required
-            />
+                <InputField
+                  label="Phone Number"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={errors.phoneNumber}
+                  required
+                  placeholder="0700000000"
+                />
+              </div>
 
-            <FilterDropdown
-              label="User Type"
-              options={USER_TYPES}
-              value={formData.userType}
-              onChange={(value) => handleSelectChange('userType', value)}
-              error={errors.userType}
-              required
-            />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <FilterDropdown
+                  label="Faculty"
+                  options={FACULTIES.map(f => ({ value: f, label: f }))}
+                  value={formData.faculty}
+                  onChange={(value) => handleSelectChange('faculty', value)}
+                  placeholder="Select your faculty"
+                />
 
-          {/* Vehicle Information Section */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-800 mb-4">Vehicle Information</h3>
+                <FilterDropdown
+                  label="Account Type"
+                  options={USER_TYPES.map(t => ({ value: t, label: t }))}
+                  value={formData.userType}
+                  onChange={(value) => handleSelectChange('userType', value)}
+                  placeholder="Select account type"
+                />
+              </div>
+            </div>
 
-            <VehicleTypeBadge
-              types={VEHICLE_TYPES}
-              selectedType={formData.vehicleType}
-              onSelect={(type) => handleSelectChange('vehicleType', type)}
-            />
-            {errors.vehicleType && <p className="text-red-500 text-sm mb-4">{errors.vehicleType}</p>}
+            {/* Step 3: Vehicle Information */}
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold text-sm">3</span>
+                <h3 className="text-lg font-semibold text-gray-900">Vehicle Information</h3>
+              </div>
 
-            <InputField
-              label="Vehicle Registration Number"
-              name="vehicleRegistrationNumber"
-              value={formData.vehicleRegistrationNumber}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              error={errors.vehicleRegistrationNumber}
-              required
-              placeholder="e.g., CAR-2345"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-4">
+                  Vehicle Type <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  {VEHICLE_TYPES.map(type => (
+                    <label
+                      key={type}
+                      className={`flex flex-col items-center gap-2 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        formData.vehicleType === type
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 bg-white hover:border-blue-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="vehicleType"
+                        value={type}
+                        checked={formData.vehicleType === type}
+                        onChange={handleInputChange}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-2xl">
+                        {type === 'CAR' && '🚗'}
+                        {type === 'BIKE' && '🏍️'}
+                        {type === 'THREE_WHEELER' && '🛺'}
+                      </span>
+                      <span className="text-sm font-medium">{type}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.vehicleType && (
+                  <p className="text-red-600 text-sm mb-4">❌ {errors.vehicleType}</p>
+                )}
+              </div>
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            fullWidth
-            loading={loading}
-            disabled={loading || !formData.googleId}
-          >
-            Create Account
-          </Button>
+              <InputField
+                label="Vehicle Registration Number"
+                name="vehicleRegistrationNumber"
+                value={formData.vehicleRegistrationNumber}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={errors.vehicleRegistrationNumber}
+                required
+                placeholder="e.g., ABC-1234"
+              />
+            </div>
 
-          {/* Login Link */}
-          <p className="text-center text-gray-700 mt-4">
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              className="text-blue-600 font-semibold hover:text-blue-700 transition"
-            >
-              Login here
-            </button>
-          </p>
-        </form>
+            {/* Submit Button */}
+            <div className="flex gap-4 pt-8 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="flex-1 py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Back to Login
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 py-3 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+              >
+                {loading ? '⏳ Creating Account...' : '✅ Create Account'}
+              </button>
+            </div>
 
-        {/* Footer */}
-        <div className="border-t border-gray-300 mt-8 pt-6 flex justify-center gap-4 text-sm">
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
-            Privacy Policy
-          </a>
-          <span className="text-gray-400">•</span>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition">
-            Terms of Service
-          </a>
+            {/* Footer */}
+            <div className="text-center pt-4 border-t border-gray-200">
+              <p className="text-gray-600">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="text-blue-600 font-semibold hover:text-blue-700"
+                >
+                  Sign in
+                </button>
+              </p>
+            </div>
+          </form>
+        </div>
+
+        {/* Security Note */}
+        <div className="text-center mt-8 text-white text-sm">
+          <p>🔒 Your information is secure and encrypted</p>
         </div>
       </div>
     </div>

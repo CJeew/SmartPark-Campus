@@ -30,6 +30,9 @@ public class ParkingSlot {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "status", nullable = false)
+    private String status;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -44,6 +47,7 @@ public class ParkingSlot {
         this.zone = zone;
         this.slotNumber = slotNumber;
         this.vehicleType = vehicleType;
+        this.status = "AVAILABLE";
     }
 
     public Long getId() { return id; }
@@ -58,6 +62,8 @@ public class ParkingSlot {
     public void setIsAvailable(boolean isAvailable) { this.isAvailable = isAvailable; }
     public boolean getIsActive() { return isActive; }
     public void setIsActive(boolean isActive) { this.isActive = isActive; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

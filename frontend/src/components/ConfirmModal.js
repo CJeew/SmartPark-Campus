@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ConfirmModal = ({ isOpen, action, bookingUser, onConfirm, onCancel }) => {
+const ConfirmModal = ({ isOpen, action, bookingUser, onConfirm, onCancel, loading = false }) => {
   const [reason, setReason] = useState('');
 
   if (!isOpen) return null;
@@ -61,18 +61,19 @@ const ConfirmModal = ({ isOpen, action, bookingUser, onConfirm, onCancel }) => {
         <div className="flex gap-3 justify-end">
           <button
             onClick={handleCancel}
+            disabled={loading}
             className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
-            disabled={isReject && !reason.trim()}
+            disabled={loading || (isReject && !reason.trim())}
             className={`px-4 py-2 text-sm text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed ${
               isReject ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
             }`}
           >
-            {isReject ? 'Reject' : 'Approve'}
+            {loading ? 'Processing...' : isReject ? 'Reject' : 'Approve'}
           </button>
         </div>
       </div>

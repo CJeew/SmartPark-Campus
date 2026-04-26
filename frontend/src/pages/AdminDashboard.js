@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminService } from '../services/adminService';
+import AdminSidebar from '../components/AdminSidebar';
 
 // ─── Skeleton loader ──────────────────────────────────────────────────────────
 const Skeleton = ({ className }) => (
@@ -94,12 +95,6 @@ const Icons = {
         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   ),
-  helmet: (
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M6 18V8a6 6 0 0112 0v10m-12 0h12m-12 0a2 2 0 002 2h8a2 2 0 002-2" />
-    </svg>
-  ),
   logout: (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -123,7 +118,6 @@ const Icons = {
 // ─── Main component ───────────────────────────────────────────────────────────
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const admin = adminService.getAdmin();
 
   const [stats, setStats]               = useState(null);
   const [users, setUsers]               = useState([]);
@@ -186,11 +180,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    adminService.logout();
-    navigate('/admin/login');
-  };
-
   const filteredUsers = users.filter((u) => {
     const q = userSearch.toLowerCase();
     const matchSearch =
@@ -214,54 +203,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-
-      {/* ── Sidebar ── */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0">
-        {/* Logo */}
-        <div className="px-6 py-5 border-b border-gray-700/60">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-sm font-bold">S</div>
-            <div>
-              <h1 className="text-base font-bold leading-tight">SmartPark</h1>
-              <p className="text-gray-400 text-xs">Admin Panel</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
-          <NavItem icon={Icons.dashboard} label="Dashboard" active />
-          <NavItem icon={Icons.users}     label="Users"         onClick={() => navigate('/admin/users')} />
-          <NavItem icon={Icons.zone}      label="Parking Zones" onClick={() => {}} />
-          <NavItem icon={Icons.helmet}    label="Helmet Rack"   onClick={() => navigate('/admin/helmet-rack')} />
-          <NavItem
-            icon={Icons.bookings}
-            label="Bookings"
-            onClick={() => navigate('/admin/bookings')}
-            badge={loadingStats ? null : stats?.pendingBookings}
-          />
-        </nav>
-
-        {/* Admin profile */}
-        <div className="px-3 py-4 border-t border-gray-700/60">
-          <div className="flex items-center gap-3 px-3 py-2 mb-1">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {admin?.fullName?.charAt(0)?.toUpperCase() ?? 'A'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{admin?.fullName ?? 'Admin'}</p>
-              <p className="text-xs text-gray-400 truncate">{admin?.email ?? ''}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-          >
-            {Icons.logout}
-            Sign Out
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar pendingBookings={loadingStats ? 0 : stats?.pendingBookings ?? 0} />
 
       {/* ── Main ── */}
       <main className="flex-1 overflow-auto">
@@ -279,12 +221,6 @@ const AdminDashboard = () => {
             >
               {Icons.refresh}
               Refresh
-            </button>
-            <button
-              onClick={() => navigate('/admin/helmet-rack')}
-              className="px-4 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
-            >
-              Helmet Rack
             </button>
             <button
               onClick={() => navigate('/admin/bookings')}

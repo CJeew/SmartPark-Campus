@@ -1,6 +1,8 @@
 package com.SmartPark.Campus.SmartPark.Campus.config;
 
 import com.SmartPark.Campus.SmartPark.Campus.entity.*;
+import com.SmartPark.Campus.SmartPark.Campus.entity.ZoneStatus;
+import com.SmartPark.Campus.SmartPark.Campus.entity.ZoneType;
 import com.SmartPark.Campus.SmartPark.Campus.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -12,7 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Component
+// @Component  // Disabled: causes EntityManagerFactory closed error during startup
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired private UserRepository userRepository;
@@ -31,10 +33,11 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedRolesAndAdmin() {
-        Role adminRole = roleRepository.findByName(Role.RoleType.ADMIN)
-                .orElseGet(() -> roleRepository.save(new Role(Role.RoleType.ADMIN)));
-        roleRepository.findByName(Role.RoleType.USER)
-                .orElseGet(() -> roleRepository.save(new Role(Role.RoleType.USER)));
+        for (Role.RoleType type : Role.RoleType.values()) {
+            roleRepository.findByName(type)
+                    .orElseGet(() -> roleRepository.save(new Role(type)));
+        }
+        Role adminRole = roleRepository.findByName(Role.RoleType.ADMIN).orElseThrow();
 
         if (!userRepository.existsByEmail("admin@smartpark.com")) {
             User admin = new User("admin@smartpark.com", "System Admin", "ADMIN001",
@@ -51,10 +54,10 @@ public class DataInitializer implements CommandLineRunner {
     private void seedZonesAndSlots() {
         if (zoneRepository.count() > 0) return;
 
-        String[][] zoneData = {
-            {"Zone A", "Faculty of Computing — Level 1", "20"},
-            {"Zone B", "Faculty of Engineering — Level 1", "20"},
-            {"Zone C", "Faculty of Business — Ground Floor", "15"},
+        Object[][] zoneData = {
+            {"Zone A", "Faculty of Computing — Level 1", ZoneType.COVERED,  20},
+            {"Zone B", "Faculty of Engineering — Level 1", ZoneType.OPEN,    20},
+            {"Zone C", "Faculty of Business — Ground Floor", ZoneType.OPEN,  15},
         };
 
         Vehicle.VehicleType[][] slotTypes = {
@@ -69,8 +72,10 @@ public class DataInitializer implements CommandLineRunner {
         String[] zoneCodes = {"A", "B", "C"};
 
         for (int z = 0; z < zoneData.length; z++) {
+            int capacity = (int) zoneData[z][3];
             ParkingZone zone = new ParkingZone(
-                    zoneData[z][0], zoneData[z][1], Integer.parseInt(zoneData[z][2]));
+                    (String) zoneData[z][0], (String) zoneData[z][1],
+                    (ZoneType) zoneData[z][2], capacity, capacity, ZoneStatus.ACTIVE, null);
             zoneRepository.save(zone);
 
             for (int s = 0; s < 5; s++) {
