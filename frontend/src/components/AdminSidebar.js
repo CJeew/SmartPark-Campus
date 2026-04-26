@@ -40,6 +40,14 @@ const Icons = {
       />
     </svg>
   ),
+  helmetRack: (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M12 3a7 7 0 00-7 7v4a5 5 0 005 5h4a5 5 0 005-5v-4a7 7 0 00-7-7z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M9 12h6M10 16h4" />
+    </svg>
+  ),
   logout: (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
       <path
@@ -140,6 +148,14 @@ const AdminSidebar = ({ pendingBookings = 0 }) => {
             label="Parking Zones"
             active={isActive('/admin/zones')}
             onClick={() => navigate('/admin/zones')}
+          />
+        )}
+        {(admin?.roles?.includes('ADMIN') || admin?.roles?.includes('TECHNICIAN')) && (
+          <NavItem
+            icon={Icons.helmetRack}
+            label="Helmet Rack"
+            active={isActive('/admin/helmet-rack')}
+            onClick={() => navigate('/admin/helmet-rack')}
           />
         )}
       </nav>

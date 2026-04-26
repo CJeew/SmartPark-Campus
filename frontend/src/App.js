@@ -13,6 +13,7 @@ import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
 import TechnicianDashboard from './pages/TechnicianDashboard';
 import AdminHelmetRack from './pages/AdminHelmetRack';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 import ZoneManagement from './pages/admin/ZoneManagement';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
@@ -44,15 +45,15 @@ function App() {
             <Route path="/profile/edit" element={<ProtectedRoute component={Profile} />} />
             <Route path="/zones" element={<ProtectedRoute component={ParkingZones} />} />
             <Route path="/notifications" element={<ProtectedRoute component={Notifications} />} />
-            <Route path="/helmet-rack" element={<ProtectedRoute component={AdminHelmetRack} />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/technician" element={<TechnicianDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/bookings" element={<AdminBookings />} />
-            <Route path="/admin/zones" element={<ZoneManagement />} />
+            <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+            <Route path="/admin/technician" element={<AdminProtectedRoute><TechnicianDashboard /></AdminProtectedRoute>} />
+            <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
+            <Route path="/admin/bookings" element={<AdminProtectedRoute><AdminBookings /></AdminProtectedRoute>} />
+            <Route path="/admin/zones" element={<AdminProtectedRoute><ZoneManagement /></AdminProtectedRoute>} />
+            <Route path="/admin/helmet-rack" element={<AdminProtectedRoute><AdminHelmetRack /></AdminProtectedRoute>} />
           </Routes>
         </Router>
       </ToastProvider>

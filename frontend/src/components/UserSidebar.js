@@ -33,14 +33,6 @@ const Icons = {
         d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h10a2 2 0 012 2v3H5V5zm0 8a2 2 0 012-2h10a2 2 0 012 2v3H5v-3z" />
     </svg>
   ),
-  helmetRack: (
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M12 3a7 7 0 00-7 7v4a5 5 0 005 5h4a5 5 0 005-5v-4a7 7 0 00-7-7z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M9 12h6M10 16h4" />
-    </svg>
-  ),
   profile: (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -96,7 +88,6 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0, unreadN
     { key: 'my-bookings',    label: 'My Bookings',          icon: Icons.bookings },
     { key: 'report-issue',   label: 'Report an Issue',      icon: Icons.issue },
     { key: 'my-tickets',     label: 'My Tickets',           icon: Icons.tickets, badge: openTicketsCount },
-    { key: 'helmet-rack',    label: 'Helmet Rack',          icon: Icons.helmetRack, isRoute: '/helmet-rack' },
     { key: 'notifications',  label: 'Notifications',        icon: Icons.notifications, badge: unreadNotifications, isRoute: '/notifications' },
   ];
 
