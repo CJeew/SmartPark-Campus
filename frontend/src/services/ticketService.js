@@ -1,10 +1,10 @@
 const API_URL = 'http://localhost:8080/api/v1/tickets';
 
 const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
   return {
     'Accept': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    'Authorization': token ? `Bearer ${token}` : '',
   };
 };
 
@@ -87,6 +87,15 @@ export const ticketService = {
     return await response.json();
   },
 
+  getAllTickets: async () => {
+    const response = await fetch(`${API_URL}/admin/all`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch all tickets');
+    return await response.json();
+  },
+
   getTechnicians: async () => {
     const response = await fetch(`${API_URL}/admin/technicians`, {
       method: 'GET',
@@ -129,6 +138,28 @@ export const ticketService = {
         errorMsg = errorData.message || JSON.stringify(errorData);
       } catch (_) {
         // body already consumed or not JSON — use generic message
+      }
+      throw new Error(errorMsg);
+    }
+    return await response.json();
+  },
+
+  addReply: async (ticketId, message) => {
+    const response = await fetch(`${API_URL}/${ticketId}/replies`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeader(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message }),
+    });
+    if (!response.ok) {
+      let errorMsg = 'Failed to add reply';
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || JSON.stringify(errorData);
+      } catch (e) {
+        errorMsg = await response.text();
       }
       throw new Error(errorMsg);
     }

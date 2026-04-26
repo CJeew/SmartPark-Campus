@@ -24,8 +24,12 @@ public class TicketResponse {
     private String preferredContactPhone;
     private List<TicketAttachmentResponse> attachments;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private Long assignedTechnicianId;
     private String assignedTechnicianName;
+    private String reporterName;
+    private String reporterEmail;
+    private List<TicketReplyResponse> replies;
 
     public TicketResponse(Long id,
                           String ticketId,
@@ -43,8 +47,12 @@ public class TicketResponse {
                           String preferredContactPhone,
                           List<TicketAttachmentResponse> attachments,
                           LocalDateTime createdAt,
+                          LocalDateTime updatedAt,
                           Long assignedTechnicianId,
-                          String assignedTechnicianName) {
+                          String assignedTechnicianName,
+                          String reporterName,
+                          String reporterEmail,
+                          List<TicketReplyResponse> replies) {
         this.id = id;
         this.ticketId = ticketId;
         this.title = title;
@@ -61,8 +69,12 @@ public class TicketResponse {
         this.preferredContactPhone = preferredContactPhone;
         this.attachments = attachments;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.assignedTechnicianId = assignedTechnicianId;
         this.assignedTechnicianName = assignedTechnicianName;
+        this.reporterName = reporterName;
+        this.reporterEmail = reporterEmail;
+        this.replies = replies;
     }
 
     public Long getId() {
@@ -129,11 +141,27 @@ public class TicketResponse {
         return createdAt;
     }
 
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
     public Long getAssignedTechnicianId() {
         return assignedTechnicianId;
     }
 
     public String getAssignedTechnicianName() {
         return assignedTechnicianName;
+    }
+
+    public String getReporterName() {
+        return reporterName;
+    }
+
+    public String getReporterEmail() {
+        return reporterEmail;
+    }
+
+    public List<TicketReplyResponse> getReplies() {
+        return replies;
     }
 }

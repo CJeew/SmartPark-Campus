@@ -1,7 +1,6 @@
 package com.SmartPark.Campus.SmartPark.Campus.controller;
 
-import com.SmartPark.Campus.SmartPark.Campus.dto.TicketCreateRequest;
-import com.SmartPark.Campus.SmartPark.Campus.dto.TicketResponse;
+import com.SmartPark.Campus.SmartPark.Campus.dto.*;
 import com.SmartPark.Campus.SmartPark.Campus.service.TicketService;
 import com.SmartPark.Campus.SmartPark.Campus.util.RequestAuthUtil;
 import jakarta.validation.Valid;
@@ -12,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +65,26 @@ public class TicketController {
     ) {
         Long resolvedUserId = requestAuthUtil.resolveUserId(authorization, userId);
         return ResponseEntity.ok(ticketService.getMyAssignedTickets(resolvedUserId));
+    }
+
+    @PostMapping("/{id}/replies")
+    public ResponseEntity<?> addReply(
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @PathVariable Long id,
+            @Valid @RequestBody TicketReplyRequest request
+    ) {
+        try {
+            Long resolvedUserId = requestAuthUtil.resolveUserId(authorization, userId);
+            return ResponseEntity.ok(ticketService.addReply(id, resolvedUserId, request));
+        } catch (Exception e) {
+            Map<String, Object> errorInfo = new HashMap<>();
+            errorInfo.put("error", "Debug Info");
+            errorInfo.put("message", e.getMessage() != null ? e.getMessage() : "No message");
+            errorInfo.put("details", e.getClass().getSimpleName());
+            errorInfo.put("receivedBody", (request != null && request.getMessage() != null) ? request.getMessage() : "null or empty");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorInfo);
+        }
     }
 
     // ── Admin endpoints ────────────────────────────────────────────────────────

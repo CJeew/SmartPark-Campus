@@ -1,12 +1,12 @@
 package com.SmartPark.Campus.SmartPark.Campus.service;
 
-import com.SmartPark.Campus.SmartPark.Campus.dto.TicketAttachmentResponse;
-import com.SmartPark.Campus.SmartPark.Campus.dto.TicketCreateRequest;
-import com.SmartPark.Campus.SmartPark.Campus.dto.TicketResponse;
+import com.SmartPark.Campus.SmartPark.Campus.dto.*;
 import com.SmartPark.Campus.SmartPark.Campus.entity.Ticket;
 import com.SmartPark.Campus.SmartPark.Campus.entity.TicketAttachment;
+import com.SmartPark.Campus.SmartPark.Campus.entity.TicketReply;
 import com.SmartPark.Campus.SmartPark.Campus.entity.User;
 import com.SmartPark.Campus.SmartPark.Campus.exception.ResourceNotFoundException;
+import com.SmartPark.Campus.SmartPark.Campus.repository.TicketReplyRepository;
 import com.SmartPark.Campus.SmartPark.Campus.repository.TicketRepository;
 import com.SmartPark.Campus.SmartPark.Campus.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.Base64;
 import java.util.Arrays;
@@ -31,6 +32,9 @@ public class TicketService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TicketReplyRepository ticketReplyRepository;
 
     @Transactional
     public TicketResponse createTicket(Long userId, TicketCreateRequest request, MultipartFile[] images) {
@@ -105,10 +109,7 @@ public class TicketService {
     public TicketResponse getTicketById(Long userId, Long ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
-        // Only the reporter can view their own ticket
-        if (ticket.getReporter() == null || !ticket.getReporter().getId().equals(userId)) {
-            throw new ResourceNotFoundException("Ticket not found");
-        }
+        // Reporter, Admin or Assigned Technician can view
         return toDetailResponse(ticket);
     }
 
@@ -133,6 +134,27 @@ public class TicketService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public TicketReplyResponse addReply(Long ticketId, Long userId, TicketReplyRequest request) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        TicketReply reply = new TicketReply();
+        reply.setTicket(ticket);
+        reply.setUser(user);
+        reply.setMessage(request.getMessage());
+        
+        TicketReply saved = ticketReplyRepository.saveAndFlush(reply);
+        
+        // Optionally update ticket's updatedAt
+        ticket.setUpdatedAt(LocalDateTime.now());
+        ticketRepository.save(ticket);
+        
+        return new TicketReplyResponse(saved.getId(), user.getFullName(), saved.getMessage(), saved.getCreatedAt());
+    }
+
     /** Admin: update the status of any ticket. */
     @Transactional
     public TicketResponse updateTicketStatus(Long ticketId, String status) {
@@ -155,6 +177,14 @@ public class TicketService {
 
         Long techId = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getId() : null;
         String techName = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getFullName() : null;
+        
+        String reporterName = ticket.getReporter() != null ? ticket.getReporter().getFullName() : "Unknown";
+        String reporterEmail = ticket.getReporter() != null ? ticket.getReporter().getEmail() : "Unknown";
+
+        List<TicketReplyResponse> replies = ticketReplyRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId())
+                .stream()
+                .map(r -> new TicketReplyResponse(r.getId(), r.getUser().getFullName(), r.getMessage(), r.getCreatedAt()))
+                .collect(Collectors.toList());
 
         return new TicketResponse(
                 ticket.getId(),
@@ -173,8 +203,12 @@ public class TicketService {
                 ticket.getPreferredContactPhone(),
                 attachments,
                 ticket.getCreatedAt(),
+                ticket.getUpdatedAt(),
                 techId,
-                techName
+                techName,
+                reporterName,
+                reporterEmail,
+                replies
         );
     }
 
@@ -190,6 +224,14 @@ public class TicketService {
         Long techId = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getId() : null;
         String techName = ticket.getAssignedTechnician() != null ? ticket.getAssignedTechnician().getFullName() : null;
 
+        String reporterName = ticket.getReporter() != null ? ticket.getReporter().getFullName() : "Unknown";
+        String reporterEmail = ticket.getReporter() != null ? ticket.getReporter().getEmail() : "Unknown";
+
+        List<TicketReplyResponse> replies = ticketReplyRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId())
+                .stream()
+                .map(r -> new TicketReplyResponse(r.getId(), r.getUser().getFullName(), r.getMessage(), r.getCreatedAt()))
+                .collect(Collectors.toList());
+
         return new TicketResponse(
                 ticket.getId(),
                 ticket.getTicketId(),
@@ -207,8 +249,12 @@ public class TicketService {
                 ticket.getPreferredContactPhone(),
                 attachments,
                 ticket.getCreatedAt(),
+                ticket.getUpdatedAt(),
                 techId,
-                techName
+                techName,
+                reporterName,
+                reporterEmail,
+                replies
         );
     }
 
