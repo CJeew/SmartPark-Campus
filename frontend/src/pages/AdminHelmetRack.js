@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminService } from '../services/adminService';
+import AdminSidebar from '../components/AdminSidebar';
 
 const statusCard = {
   AVAILABLE: 'bg-emerald-100 border-emerald-300 text-emerald-800 hover:bg-emerald-200',
@@ -365,7 +366,10 @@ const AdminHelmetRack = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 flex">
+      <AdminSidebar />
+
+      <main className="flex-1 overflow-auto">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Helmet Rack Management</h1>
@@ -377,7 +381,7 @@ const AdminHelmetRack = () => {
         </div>
       </header>
 
-      <main className="px-6 py-6 space-y-6">
+      <div className="px-6 py-6 space-y-6">
         {toast && (
           <div className={`fixed top-5 right-5 z-50 px-4 py-2 rounded-lg text-sm shadow ${toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`}>
             {toast.message}
@@ -497,6 +501,7 @@ const AdminHelmetRack = () => {
             </table>
           </div>
         </section>
+      </div>
       </main>
 
       {selectedSlot && modalMode && (
