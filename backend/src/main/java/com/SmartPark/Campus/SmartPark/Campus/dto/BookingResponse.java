@@ -14,6 +14,7 @@ public class BookingResponse {
     private String zoneName;
     private String vehicleType;
     private String status;
+    private String purpose;
     private String reason;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -24,7 +25,7 @@ public class BookingResponse {
     public BookingResponse(Long id, Long userId, String userFullName, String userEmail,
                            String userUniversityId, Long slotId, String slotNumber,
                            Long zoneId, String zoneName, String vehicleType,
-                           String status, String reason,
+                           String status, String purpose, String reason,
                            LocalDateTime startTime, LocalDateTime endTime, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
@@ -37,6 +38,7 @@ public class BookingResponse {
         this.zoneName = zoneName;
         this.vehicleType = vehicleType;
         this.status = status;
+        this.purpose = purpose;
         this.reason = reason;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -65,6 +67,8 @@ public class BookingResponse {
     public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getPurpose() { return purpose; }
+    public void setPurpose(String purpose) { this.purpose = purpose; }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
     public LocalDateTime getStartTime() { return startTime; }
