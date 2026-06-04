@@ -1,11 +1,16 @@
 const API_URL = 'http://localhost:8080/api/v1/tickets';
 
 const getAuthHeader = () => {
-  const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-  return {
+  const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+  const headers = {
     'Accept': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
   };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
 };
 
 export const ticketService = {
@@ -37,7 +42,7 @@ export const ticketService = {
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
-      } catch (e) {
+      } catch {
         errorMsg = await response.text();
       }
       console.error('Backend Error Response:', errorMsg);
@@ -58,7 +63,7 @@ export const ticketService = {
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
-      } catch (e) {
+      } catch {
         errorMsg = await response.text();
       }
       throw new Error(errorMsg);
@@ -78,7 +83,7 @@ export const ticketService = {
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
-      } catch (e) {
+      } catch {
         errorMsg = await response.text();
       }
       throw new Error(errorMsg);
@@ -118,7 +123,7 @@ export const ticketService = {
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
-      } catch (e) {
+      } catch {
         errorMsg = await response.text();
       }
       throw new Error(errorMsg);
@@ -136,7 +141,7 @@ export const ticketService = {
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
-      } catch (_) {
+      } catch {
         // body already consumed or not JSON — use generic message
       }
       throw new Error(errorMsg);
@@ -158,7 +163,7 @@ export const ticketService = {
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
-      } catch (e) {
+      } catch {
         errorMsg = await response.text();
       }
       throw new Error(errorMsg);
