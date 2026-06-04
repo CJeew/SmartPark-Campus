@@ -1,10 +1,7 @@
-const API_URL = 'http://localhost:8080/api/v1/tickets';
+const API_URL = "http://localhost:8080/api/v1/tickets";
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
-  const headers = {
-    'Accept': 'application/json',
-  };
+const buildAuthHeader = (token) => {
+  const headers = { Accept: "application/json" };
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -13,53 +10,63 @@ const getAuthHeader = () => {
   return headers;
 };
 
+const getUserAuthHeader = () => buildAuthHeader(localStorage.getItem("token"));
+const getAdminAuthHeader = () =>
+  buildAuthHeader(
+    localStorage.getItem("adminToken") || localStorage.getItem("token"),
+  );
+
 export const ticketService = {
   createTicket: async (ticketData, images) => {
     const formData = new FormData();
-    
-    Object.keys(ticketData).forEach(key => {
-      if (ticketData[key] !== undefined && ticketData[key] !== null && ticketData[key] !== '') {
+
+    Object.keys(ticketData).forEach((key) => {
+      if (
+        ticketData[key] !== undefined &&
+        ticketData[key] !== null &&
+        ticketData[key] !== ""
+      ) {
         formData.append(key, ticketData[key]);
       }
     });
-    
+
     // Append images (up to 3 as requested, Multer/MultipartFile equivalent)
     if (images && images.length > 0) {
       const maxImages = Math.min(images.length, 3);
       for (let i = 0; i < maxImages; i++) {
-        formData.append('images', images[i]);
+        formData.append("images", images[i]);
       }
     }
 
     const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: getAuthHeader(), // Browser sets multipart/form-data with boundary
+      method: "POST",
+      headers: getUserAuthHeader(), // Browser sets multipart/form-data with boundary
       body: formData,
     });
 
     if (!response.ok) {
-      let errorMsg = 'Failed to create ticket';
+      let errorMsg = "Failed to create ticket";
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
       } catch {
         errorMsg = await response.text();
       }
-      console.error('Backend Error Response:', errorMsg);
+      console.error("Backend Error Response:", errorMsg);
       throw new Error(errorMsg);
     }
-    
+
     return await response.json();
   },
 
   getMyTickets: async (limit = 50) => {
     const response = await fetch(`${API_URL}/my?limit=${limit}`, {
-      method: 'GET',
-      headers: getAuthHeader(),
+      method: "GET",
+      headers: getUserAuthHeader(),
     });
 
     if (!response.ok) {
-      let errorMsg = 'Failed to fetch tickets';
+      let errorMsg = "Failed to fetch tickets";
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
@@ -74,12 +81,12 @@ export const ticketService = {
 
   getTicketById: async (ticketId) => {
     const response = await fetch(`${API_URL}/${ticketId}`, {
-      method: 'GET',
-      headers: getAuthHeader(),
+      method: "GET",
+      headers: getUserAuthHeader(),
     });
 
     if (!response.ok) {
-      let errorMsg = 'Failed to fetch ticket';
+      let errorMsg = "Failed to fetch ticket";
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
@@ -94,19 +101,19 @@ export const ticketService = {
 
   getAllTickets: async () => {
     const response = await fetch(`${API_URL}/admin/all`, {
-      method: 'GET',
-      headers: getAuthHeader(),
+      method: "GET",
+      headers: getAdminAuthHeader(),
     });
-    if (!response.ok) throw new Error('Failed to fetch all tickets');
+    if (!response.ok) throw new Error("Failed to fetch all tickets");
     return await response.json();
   },
 
   getTechnicians: async () => {
     const response = await fetch(`${API_URL}/admin/technicians`, {
-      method: 'GET',
-      headers: getAuthHeader(),
+      method: "GET",
+      headers: getAdminAuthHeader(),
     });
-    if (!response.ok) throw new Error('Failed to fetch technicians');
+    if (!response.ok) throw new Error("Failed to fetch technicians");
     return await response.json();
   },
 
@@ -115,11 +122,11 @@ export const ticketService = {
       ? `${API_URL}/admin/${ticketId}/assign?technicianId=${technicianId}`
       : `${API_URL}/admin/${ticketId}/assign`;
     const response = await fetch(url, {
-      method: 'PATCH',
-      headers: getAuthHeader(),
+      method: "PATCH",
+      headers: getAdminAuthHeader(),
     });
     if (!response.ok) {
-      let errorMsg = 'Failed to assign technician';
+      let errorMsg = "Failed to assign technician";
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
@@ -133,11 +140,11 @@ export const ticketService = {
 
   getMyAssignedTickets: async () => {
     const response = await fetch(`${API_URL}/my-assigned`, {
-      method: 'GET',
-      headers: getAuthHeader(),
+      method: "GET",
+      headers: getUserAuthHeader(),
     });
     if (!response.ok) {
-      let errorMsg = 'Failed to fetch assigned tickets';
+      let errorMsg = "Failed to fetch assigned tickets";
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
@@ -151,15 +158,15 @@ export const ticketService = {
 
   addReply: async (ticketId, message) => {
     const response = await fetch(`${API_URL}/${ticketId}/replies`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json'
+        ...getUserAuthHeader(),
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ message }),
     });
     if (!response.ok) {
-      let errorMsg = 'Failed to add reply';
+      let errorMsg = "Failed to add reply";
       try {
         const errorData = await response.json();
         errorMsg = errorData.message || JSON.stringify(errorData);
