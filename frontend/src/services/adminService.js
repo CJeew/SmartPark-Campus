@@ -83,4 +83,57 @@ export const adminService = {
     if (!response.ok) throw new Error('Failed to update booking');
     return response.json();
   },
+
+  getHelmetRackOverview: async () => {
+    const response = await fetch(`${API_URL}/admin/helmet-rack/overview`, { headers: authHeader() });
+    if (!response.ok) throw new Error('Failed to load helmet rack overview');
+    return response.json();
+  },
+
+  getHelmetRackActivities: async (query = '') => {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    const response = await fetch(`${API_URL}/admin/helmet-rack/activities?${params}`, { headers: authHeader() });
+    if (!response.ok) throw new Error('Failed to load helmet activities');
+    return response.json();
+  },
+
+  helmetCheckIn: async (slotId, payload) => {
+    const response = await fetch(`${API_URL}/admin/helmet-rack/slots/${slotId}/check-in`, {
+      method: 'POST',
+      headers: authHeader(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error('Failed to check in helmet');
+    return response.json();
+  },
+
+  helmetCheckOut: async (slotId, payload) => {
+    const response = await fetch(`${API_URL}/admin/helmet-rack/slots/${slotId}/check-out`, {
+      method: 'POST',
+      headers: authHeader(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error('Failed to check out helmet');
+    return response.json();
+  },
+
+  helmetFlag: async (slotId, payload) => {
+    const response = await fetch(`${API_URL}/admin/helmet-rack/slots/${slotId}/flag`, {
+      method: 'POST',
+      headers: authHeader(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error('Failed to flag slot');
+    return response.json();
+  },
+
+  helmetUnflag: async (slotId) => {
+    const response = await fetch(`${API_URL}/admin/helmet-rack/slots/${slotId}/unflag`, {
+      method: 'POST',
+      headers: authHeader(),
+    });
+    if (!response.ok) throw new Error('Failed to unflag slot');
+    return response.json();
+  },
 };

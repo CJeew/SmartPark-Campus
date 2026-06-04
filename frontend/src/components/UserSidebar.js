@@ -33,6 +33,14 @@ const Icons = {
         d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h10a2 2 0 012 2v3H5V5zm0 8a2 2 0 012-2h10a2 2 0 012 2v3H5v-3z" />
     </svg>
   ),
+  helmetRack: (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M12 3a7 7 0 00-7 7v4a5 5 0 005 5h4a5 5 0 005-5v-4a7 7 0 00-7-7z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M9 12h6M10 16h4" />
+    </svg>
+  ),
   profile: (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -43,6 +51,12 @@ const Icons = {
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  ),
+  notifications: (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
     </svg>
   ),
 };
@@ -66,7 +80,7 @@ const NavItem = ({ icon, label, active, onClick, badge }) => (
   </button>
 );
 
-const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
+const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0, unreadNotifications = 0 }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -77,11 +91,13 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
   };
 
   const navItems = [
-    { key: 'overview',      label: 'Overview',             icon: Icons.overview },
-    { key: 'browse-zones',  label: 'Browse Parking Zones', icon: Icons.browse },
-    { key: 'my-bookings',   label: 'My Bookings',          icon: Icons.bookings },
-    { key: 'report-issue',  label: 'Report an Issue',      icon: Icons.issue },
-    { key: 'my-tickets',    label: 'My Tickets',           icon: Icons.tickets, badge: openTicketsCount },
+    { key: 'overview',       label: 'Overview',             icon: Icons.overview },
+    { key: 'browse-zones',   label: 'Browse Parking Zones', icon: Icons.browse },
+    { key: 'my-bookings',    label: 'My Bookings',          icon: Icons.bookings },
+    { key: 'helmet-slot-grid', label: 'Helmet Slot Grid',   icon: Icons.helmetRack },
+    { key: 'report-issue',   label: 'Report an Issue',      icon: Icons.issue },
+    { key: 'my-tickets',     label: 'My Tickets',           icon: Icons.tickets, badge: openTicketsCount },
+    { key: 'notifications',  label: 'Notifications',        icon: Icons.notifications, badge: unreadNotifications, isRoute: '/notifications' },
   ];
 
   return (
@@ -89,7 +105,11 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
       {/* Brand */}
       <div className="px-6 py-5 border-b border-gray-700/60">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-sm font-bold">S</div>
+          <img
+            src="/Untitled design (1).png"
+            alt="SmartPark Campus"
+            className="w-9 h-9 object-contain flex-shrink-0"
+          />
           <div>
             <h1 className="text-base font-bold leading-tight">SmartPark</h1>
             <p className="text-gray-400 text-xs">Campus Parking</p>
@@ -105,7 +125,7 @@ const UserSidebar = ({ activeSection, onNavChange, openTicketsCount = 0 }) => {
             icon={item.icon}
             label={item.label}
             active={activeSection === item.key}
-            onClick={() => onNavChange(item.key)}
+            onClick={() => item.isRoute ? navigate(item.isRoute) : onNavChange(item.key)}
             badge={item.badge}
           />
         ))}

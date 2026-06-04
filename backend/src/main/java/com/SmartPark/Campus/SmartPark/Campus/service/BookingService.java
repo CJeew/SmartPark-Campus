@@ -103,7 +103,8 @@ public class BookingService {
         // Create booking
         Booking booking = new Booking(user, slot, request.getStartTime(), request.getEndTime());
         booking.setStatus(Booking.BookingStatus.PENDING);
-        
+        booking.setPurpose(request.getPurpose());
+
         return toResponse(bookingRepository.save(booking));
     }
 
@@ -185,6 +186,7 @@ public class BookingService {
                 b.getSlot().getZone().getName(),
                 b.getSlot().getVehicleType().name(),
                 b.getStatus().name(),
+                b.getPurpose(),
                 b.getReason(),
                 b.getStartTime(),
                 b.getEndTime(),

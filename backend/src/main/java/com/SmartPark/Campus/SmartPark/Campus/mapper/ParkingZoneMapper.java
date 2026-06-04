@@ -2,6 +2,7 @@ package com.SmartPark.Campus.SmartPark.Campus.mapper;
 
 import com.SmartPark.Campus.SmartPark.Campus.dto.ParkingZoneRequest;
 import com.SmartPark.Campus.SmartPark.Campus.dto.ParkingZoneResponse;
+import com.SmartPark.Campus.SmartPark.Campus.entity.ParkingSlot;
 import com.SmartPark.Campus.SmartPark.Campus.entity.ParkingZone;
 import com.SmartPark.Campus.SmartPark.Campus.entity.ZoneStatus;
 import org.springframework.stereotype.Component;
@@ -42,16 +43,21 @@ public class ParkingZoneMapper {
         res.setName(zone.getName());
         res.setLocation(zone.getLocation());
         res.setType(zone.getType());
-        res.setTotalCapacity(zone.getTotalCapacity());
-        res.setAvailableSlots(zone.getAvailableSlots());
-        res.setOccupancyRate(calculateOccupancyRate(zone));
         res.setStatus(zone.getStatus());
         res.setDescription(zone.getDescription());
         res.setAvailabilityWindows(zone.getAvailabilityWindows());
         res.setCreatedAt(zone.getCreatedAt());
         res.setUpdatedAt(zone.getUpdatedAt());
-        if (zone.getSlots() != null) {
-            List<ParkingZoneResponse.SlotDto> slotDtos = zone.getSlots().stream()
+
+        List<ParkingSlot> slots = zone.getSlots();
+        if (slots != null && !slots.isEmpty()) {
+            int total = slots.size();
+            long occupiedCount = slots.stream().filter(s -> !s.getIsAvailable()).count();
+            res.setTotalCapacity(total);
+            res.setAvailableSlots((int) (total - occupiedCount));
+            res.setOccupancyRate(Math.round((double) occupiedCount / total * 10000.0) / 100.0);
+
+            List<ParkingZoneResponse.SlotDto> slotDtos = slots.stream()
                     .map(s -> new ParkingZoneResponse.SlotDto(
                             s.getId(),
                             s.getSlotNumber(),
@@ -59,7 +65,12 @@ public class ParkingZoneMapper {
                             s.getIsAvailable()))
                     .collect(Collectors.toList());
             res.setSlots(slotDtos);
+        } else {
+            res.setTotalCapacity(zone.getTotalCapacity());
+            res.setAvailableSlots(zone.getAvailableSlots());
+            res.setOccupancyRate(calculateOccupancyRate(zone));
         }
+
         return res;
     }
 

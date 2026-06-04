@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/stats").hasAnyRole("ADMIN", "TECHNICIAN")
                 .requestMatchers("/api/v1/tickets/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/tickets/my-assigned").hasAnyRole("TECHNICIAN", "ADMIN")
+                .requestMatchers("/api/admin/helmet-rack/**").hasAnyRole("ADMIN", "TECHNICIAN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/parking-zones/**").authenticated()
                 .requestMatchers("/api/v1/parking-zones/**").hasRole("ADMIN")

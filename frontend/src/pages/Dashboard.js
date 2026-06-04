@@ -7,6 +7,7 @@ import StatusBadge from '../components/StatusBadge';
 import { dashboardService } from '../services/dashboardService';
 import { bookingService } from '../services/bookingService';
 import { ticketService } from '../services/ticketService';
+import { notificationService } from '../services/notificationService';
 
 const RefreshIcon = () => (
   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
@@ -19,8 +20,15 @@ const sectionTitles = {
   overview:       'Dashboard Overview',
   'browse-zones': 'Browse Parking Zones',
   'my-bookings':  'My Bookings',
+  'helmet-slot-grid': 'Helmet Slot Grid',
   'report-issue': 'Report an Issue',
   'my-tickets':   'My Tickets',
+};
+
+const helmetSlotStyles = {
+  AVAILABLE: 'bg-emerald-100 border-emerald-300 text-emerald-800',
+  OCCUPIED: 'bg-amber-100 border-amber-300 text-amber-900',
+  FLAGGED: 'bg-red-100 border-red-300 text-red-900',
 };
 
 const Dashboard = () => {
@@ -45,6 +53,11 @@ const Dashboard = () => {
   const [bookingStatusFilter, setBookingStatusFilter] = useState('ALL');
   const [cancelModal, setCancelModal] = useState({ open: false, booking: null });
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [helmetOverview, setHelmetOverview] = useState(null);
+  const [helmetLoading, setHelmetLoading] = useState(false);
+  const [helmetError, setHelmetError] = useState(null);
+  const [helmetSearch, setHelmetSearch] = useState('');
 
   const [myTickets, setMyTickets] = useState([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
@@ -80,6 +93,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    // Fetch unread notification count for sidebar badge (only if logged in)
+    const userId = user?.id;
+    if (userId) {
+      notificationService.getUnreadCount()
+        .then(count => setUnreadCount(count))
+        .catch(() => {});
+    }
   }, [fetchDashboardData]);
 
   const fetchUserBookings = useCallback(async () => {
@@ -92,6 +112,29 @@ const Dashboard = () => {
       setBookingsError('Failed to load bookings.');
     } finally {
       setBookingsLoading(false);
+    }
+  }, []);
+
+  const fetchHelmetOverview = useCallback(async () => {
+    setHelmetLoading(true);
+    setHelmetError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8080/api/v1/helmet-rack/overview', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to load helmet slot grid');
+      }
+      const data = await response.json();
+      setHelmetOverview(data);
+    } catch (err) {
+      setHelmetError('Unable to load helmet slot grid right now.');
+    } finally {
+      setHelmetLoading(false);
     }
   }, []);
 
@@ -119,6 +162,11 @@ const Dashboard = () => {
       fetchMyTickets();
     }
   }, [activeSection, fetchMyTickets]);
+  useEffect(() => {
+    if (activeSection === 'helmet-slot-grid') {
+      fetchHelmetOverview();
+    }
+  }, [activeSection, fetchHelmetOverview]);
 
   const handleCancelBooking = async () => {
     if (!cancelModal.booking) return;
@@ -147,6 +195,13 @@ const Dashboard = () => {
   };
 
   const openTicketsCount = recentTickets.filter(t => t.status === 'OPEN').length;
+  const filteredHelmetSlots = (helmetOverview?.slots || []).filter((slot) => {
+    const q = helmetSearch.trim().toLowerCase();
+    if (!q) return true;
+    return [slot.slotCode, slot.currentStudentId, slot.currentStudentName, slot.currentHelmetTag, slot.status]
+      .filter(Boolean)
+      .some((v) => String(v).toLowerCase().includes(q));
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -162,6 +217,7 @@ const Dashboard = () => {
           }
         }}
         openTicketsCount={openTicketsCount}
+        unreadNotifications={unreadCount}
       />
 
       <main className="flex-1 overflow-auto flex flex-col">
@@ -789,6 +845,90 @@ const Dashboard = () => {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── HELMET SLOT GRID ── */}
+          {activeSection === 'helmet-slot-grid' && (
+            <div className="space-y-6">
+              {helmetError && (
+                <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 text-sm text-red-700">
+                  {helmetError}
+                </div>
+              )}
+
+              <section className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="bg-white border rounded-xl p-4">
+                  <p className="text-xs text-gray-500">Total Slots</p>
+                  <p className="text-2xl font-bold text-gray-900">{helmetOverview?.stats?.totalSlots ?? '-'}</p>
+                </div>
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                  <p className="text-xs text-emerald-700">Available</p>
+                  <p className="text-2xl font-bold text-emerald-900">{helmetOverview?.stats?.availableSlots ?? '-'}</p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <p className="text-xs text-amber-700">Occupied</p>
+                  <p className="text-2xl font-bold text-amber-900">{helmetOverview?.stats?.occupiedSlots ?? '-'}</p>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-xs text-red-700">Flagged</p>
+                  <p className="text-2xl font-bold text-red-900">{helmetOverview?.stats?.flaggedSlots ?? '-'}</p>
+                </div>
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                  <p className="text-xs text-indigo-700">Occupancy Rate</p>
+                  <p className="text-2xl font-bold text-indigo-900">{helmetOverview?.stats?.occupancyRate?.toFixed(1) ?? '-'}%</p>
+                </div>
+              </section>
+
+              <section className="bg-white border rounded-xl p-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">Helmet Slot Grid</h3>
+                    <p className="text-xs text-gray-500">Read-only helmet slot status for students</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={helmetSearch}
+                      onChange={(e) => setHelmetSearch(e.target.value)}
+                      placeholder="Search slot/student/tag"
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56"
+                    />
+                    <button
+                      onClick={fetchHelmetOverview}
+                      className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm"
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3 text-xs mb-4">
+                  <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-400" /> Available</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-400" /> Occupied</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-400" /> Flagged</span>
+                </div>
+
+                {helmetLoading ? (
+                  <p className="text-sm text-gray-500">Loading helmet slots...</p>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                    {filteredHelmetSlots.map((slot) => (
+                      <div
+                        key={slot.id}
+                        className={`border rounded-xl p-3 text-left min-h-[98px] ${helmetSlotStyles[slot.status] || 'bg-gray-100 border-gray-300 text-gray-800'}`}
+                      >
+                        <p className="font-bold text-sm">{slot.slotCode}</p>
+                        <p className="text-xs mt-1">{slot.status}</p>
+                        {slot.currentHelmetTag && <p className="text-[11px] mt-1 truncate">Tag: {slot.currentHelmetTag}</p>}
+                        {slot.currentStudentId && <p className="text-[11px] truncate">ID: {slot.currentStudentId}</p>}
+                      </div>
+                    ))}
+                    {!filteredHelmetSlots.length && (
+                      <p className="text-sm text-gray-500 col-span-full">No matching helmet slots found.</p>
+                    )}
+                  </div>
+                )}
+              </section>
             </div>
           )}
 

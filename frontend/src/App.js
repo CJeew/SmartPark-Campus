@@ -6,11 +6,14 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ParkingZones from './pages/ParkingZones';
+import Notifications from './pages/Notifications';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
 import TechnicianDashboard from './pages/TechnicianDashboard';
+import AdminHelmetRack from './pages/AdminHelmetRack';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 import ZoneManagement from './pages/admin/ZoneManagement';
 import TicketCreate from './pages/TicketCreate';
 import AdminTickets from './pages/AdminTickets';
@@ -53,6 +56,16 @@ function App() {
             <Route path="/admin/bookings" element={<AdminBookings />} />
             <Route path="/admin/zones" element={<ZoneManagement />} />
             <Route path="/admin/tickets" element={<AdminTickets />} />
+            <Route path="/notifications" element={<ProtectedRoute component={Notifications} />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            {/* Admin routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+            <Route path="/admin/technician" element={<AdminProtectedRoute><TechnicianDashboard /></AdminProtectedRoute>} />
+            <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
+            <Route path="/admin/bookings" element={<AdminProtectedRoute><AdminBookings /></AdminProtectedRoute>} />
+            <Route path="/admin/zones" element={<AdminProtectedRoute><ZoneManagement /></AdminProtectedRoute>} />
+            <Route path="/admin/helmet-rack" element={<AdminProtectedRoute><AdminHelmetRack /></AdminProtectedRoute>} />
           </Routes>
         </Router>
       </ToastProvider>
