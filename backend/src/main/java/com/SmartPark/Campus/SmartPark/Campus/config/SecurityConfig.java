@@ -1,6 +1,7 @@
 package com.SmartPark.Campus.SmartPark.Campus.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,10 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    // Comma-separated list; override with the APP_CORS_ALLOWED_ORIGINS env var
+    @Value("${app.cors.allowed-origins}")
+    private String[] allowedOrigins;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -39,8 +44,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(request -> {
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowCredentials(true);
-                config.addAllowedOrigin("http://localhost:3000");
-                config.addAllowedOrigin("http://localhost:8080");
+                for (String origin : allowedOrigins) {
+                    config.addAllowedOrigin(origin.trim());
+                }
                 config.addAllowedHeader("*");
                 config.addAllowedMethod("*");
                 return config;
