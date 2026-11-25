@@ -8,6 +8,7 @@ import { dashboardService } from '../services/dashboardService';
 import { bookingService } from '../services/bookingService';
 import { ticketService } from '../services/ticketService';
 import { notificationService } from '../services/notificationService';
+import { API_BASE_URL } from "../config";
 
 const RefreshIcon = () => (
   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
@@ -120,7 +121,7 @@ const Dashboard = () => {
     setHelmetError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/v1/helmet-rack/overview', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/helmet-rack/overview`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

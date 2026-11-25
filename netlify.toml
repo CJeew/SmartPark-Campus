@@ -2,3 +2,8 @@
   base = "frontend"
   command = "npm run build"
   publish = "build"
+# React Router: serve index.html for all app routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

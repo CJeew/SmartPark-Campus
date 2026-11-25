@@ -1,4 +1,5 @@
-const BASE = (zoneId) => `http://localhost:8080/api/admin/parking-zones/${zoneId}/slots`;
+import { API_BASE_URL } from "../config";
+const BASE = (zoneId) => `${API_BASE_URL}/api/admin/parking-zones/${zoneId}/slots`;
 const getAdminToken = () => localStorage.getItem('adminToken');
 
 const headers = () => ({

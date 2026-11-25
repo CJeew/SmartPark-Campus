@@ -1,4 +1,5 @@
-const BASE = 'http://localhost:8080/api/v1/parking-zones';
+import { API_BASE_URL } from "../config";
+const BASE = `${API_BASE_URL}/api/v1/parking-zones`;
 
 const authHeader = () => ({
   'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('adminToken')}`,

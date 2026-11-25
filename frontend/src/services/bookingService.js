@@ -1,5 +1,6 @@
-const API_BASE = 'http://localhost:8080/api/v1/bookings';
-const ADMIN_API_BASE = 'http://localhost:8080/api/admin/bookings';
+import { API_BASE_URL } from "../config";
+const API_BASE = `${API_BASE_URL}/api/v1/bookings`;
+const ADMIN_API_BASE = `${API_BASE_URL}/api/admin/bookings`;
 
 const getAuthToken = () => localStorage.getItem('token');
 const getAdminToken = () => localStorage.getItem('adminToken');

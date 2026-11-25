@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar';
 import { ticketService } from '../services/ticketService';
+import { API_BASE_URL } from "../config";
 
-const API = 'http://localhost:8080/api/v1/tickets';
+const API = `${API_BASE_URL}/api/v1/tickets`;
 
 const getAdminHeader = () => {
   const token = localStorage.getItem('adminToken') || localStorage.getItem('token');

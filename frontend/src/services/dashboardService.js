@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8080/api';
+import { API_BASE_URL } from "../config";
+const API_URL = `${API_BASE_URL}/api`;
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
