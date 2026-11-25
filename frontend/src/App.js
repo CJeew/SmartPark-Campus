@@ -20,7 +20,11 @@ import AdminTickets from './pages/AdminTickets';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
 
-const GOOGLE_CLIENT_ID = '645115511045-86514437mn48ffcsq67s7t9v32doqfrj.apps.googleusercontent.com';
+// Set REACT_APP_GOOGLE_CLIENT_ID in the hosting environment (e.g. Netlify);
+// falls back to the original client for local development.
+const GOOGLE_CLIENT_ID =
+  process.env.REACT_APP_GOOGLE_CLIENT_ID ||
+  '645115511045-86514437mn48ffcsq67s7t9v32doqfrj.apps.googleusercontent.com';
 
 // Protected Route Component
 const ProtectedRoute = ({ component: Component }) => {
